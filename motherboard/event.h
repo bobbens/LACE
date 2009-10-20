@@ -4,33 +4,59 @@
 #  define _EVENT_H
 
 
+#include <stdint.h>
+
+
+/**
+ * @brief Event types.
+ */
 typedef enum event_type_e {
-   EVENT_TYPE_NONE,
+   EVENT_TYPE_NONE, /**< No valid event. */
    /* SPI Master. */
-   EVENT_TYPE_SPI,
+   EVENT_TYPE_SPI, /**< SPI subsystem event. */
    /* Module. */
-   EVENT_TYPE_MODULE,
+   EVENT_TYPE_MODULE, /**< Module subsystem event. */
    /* ADC */
-   EVENT_TYPE_ADC
+   EVENT_TYPE_ADC /**< ADC event. */
 } event_type_t;
 
 
+/**
+ * @brief SPI subsystem event.
+ */
 typedef struct event_spi_s {
-   event_type_t type;
-   int port;
+   event_type_t type; /**< Type of the event. */
+   int port; /**< SPI port generating event. */
 } event_spi_t;
 
 
+/**
+ * @brief Module subsystem event.
+ */
 typedef struct event_module_s {
-   event_type_t type;
-   int port;
+   event_type_t type; /**< Type of the event. */
+   int port; /**< Module generating the event. */
 } event_module_t;
 
 
+/**
+ * @brief ADC event.
+ */
+typedef struct event_adc_s {
+   event_type_t type; /**< Type of the event. */
+   int port; /**< ADC port generating the event. */
+} event_adc_t;
+
+
+
+/**
+ * @brief All the events.
+ */
 typedef union event_u {
-   event_type_t type; /**< Type of event. */
-   event_spi_t spi;
-   event_module_t module;
+   event_type_t type; /**< Type of the event. */
+   event_spi_t spi; /**< SPI event. */
+   event_module_t module; /**< Module event. */
+   event_adc_t adc; /**< ADC event. */
 } event_t;
 
 

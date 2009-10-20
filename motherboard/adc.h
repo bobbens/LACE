@@ -5,9 +5,9 @@
 
 
 /**
- * @brief Initializes all the adc pins.
+ * @brief Initializes the ADC subsystem.
  */
-void adc_initIO (void);
+void adc_init (void);
 
 
 #endif /* _ADC_H */

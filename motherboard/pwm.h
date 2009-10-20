@@ -5,9 +5,9 @@
 
 
 /**
- * @brief Initializes the PWM IO interface.
+ * @brief Initializes the PWM subsystem.
  */
-void pwm_initIO (void);
+void pwm_init (void);
 
 
 #endif /* _PWM_H */

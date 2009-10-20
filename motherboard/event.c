@@ -11,8 +11,6 @@ static int event_top = 0;
 
 void event_push( event_t *evt )
 {
-   event_t *top;
-
    /* Abort adding event. */
    if (event_top >= EVENT_STACK_SIZE)
       return;

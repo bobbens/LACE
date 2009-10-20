@@ -14,10 +14,10 @@
 void init (void)
 {
    /* ADC. */
-   adc_initIO();
+   adc_init();
 
    /* PWM. */
-   pwm_initIO();
+   pwm_init();
 
    /* Modules. */
    mod_init();
