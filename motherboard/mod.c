@@ -1,10 +1,13 @@
 
 
-#include "ioconf.h"
+#include "conf.h"
 
 #include "mod.h"
 
 #include "spim.h"
+#include "mod_def.h"
+
+#include <avr/interrupt.h>
 
 
 /* Internal module list. */
@@ -36,7 +39,7 @@ void mod_initIO (void)
 /**
  * @brief On signal handler.
  */
-SIG(MOD_ON_SIG)
+ISR(MOD_ON_SIG)
 {
 }
 
@@ -55,7 +58,7 @@ void mod_init (void)
    mod_initIO();
 
    /* Enable interrupts. */
-   PCICR      |= _BV(ENCODER_INT);
+   PCICR      |= _BV(MOD_ON_INT);
    MCUCR      |= /*_BV(ISC01) |*/ _BV(ISC00); /* Set on rising/falling edge. */
    MOD_ON_MSK |= _BV(MOD1_ON_INT) | _BV(MOD2_ON_INT);
 

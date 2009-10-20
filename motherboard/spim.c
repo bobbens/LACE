@@ -1,12 +1,11 @@
 
 
-#include "ioconf.h"
+#include "conf.h"
 
 #include "spim.h"
-#include "buf_ring.h"
+#include "event.h"
 
-
-#define RING_BUFFER_LEN       64
+#include <avr/interrupt.h>
 
 
 typedef struct ring_buffer_s {
@@ -18,6 +17,7 @@ typedef struct ring_buffer_s {
 
 static ring_buffer_t spi_out = { .start = 0, .end = 0 };
 static ring_buffer_t spi_in  = { .start = 0, .end = 0 };
+static int spi_port = 0; /**< Current port sending on. */
 
 
 /**
@@ -78,12 +78,23 @@ void spim_init (void)
  */
 ISR(SIG_SPI)
 {
+   event_t evt;
+
    /* Get last character. */
    ring_put( &spi_in, SPDR );
 
    /* Finished, so we break. */
    if (ring_empty( &spi_out )) {
-      SPCR &= ~_BV(SPE);
+      /* Unselect slaves. */
+      MOD1_SS_PORT |=  _BV(MOD1_SS_P);
+      MOD2_SS_PORT |=  _BV(MOD2_SS_P);
+      /* Disable SPI. */
+      SPCR         &= ~_BV(SPE);
+
+      /* Send event. */
+      evt.type      = EVENT_TYPE_SPI;
+      evt.spi.port  = spi_port;
+      event_push( &evt );
    }
 
    /* Get ready for next write. */
@@ -91,7 +102,7 @@ ISR(SIG_SPI)
 }
 
 
-void spim_transmit( char *data, int len )
+void spim_transmit( int port, char *data, int len )
 {
    int i;
 
@@ -102,6 +113,20 @@ void spim_transmit( char *data, int len )
    /* Fill output buffer. */
    for (i=0; i<len; i++)
       ring_put( &spi_out, data[i] );
+
+   /* Set the port. */
+   spi_port = port;
+   switch (spi_port) {
+      case 1:
+         MOD1_SS_PORT &= ~_BV(MOD1_SS_P);
+         MOD2_SS_PORT |=  _BV(MOD2_SS_P);
+         break;
+
+      case 2:
+         MOD1_SS_PORT |=  _BV(MOD1_SS_P);
+         MOD2_SS_PORT &= ~_BV(MOD2_SS_P);
+         break;
+   }
 
    /* Enable SPI. */
    SPCR |= _BV(SPE);

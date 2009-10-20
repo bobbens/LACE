@@ -42,8 +42,9 @@
 
 
 /* Module Global. */
-#define MOD_ON_MSK         PCMSK3
-#define MOD_ON_SIG         SIG_PIN_CHANGE3
+#define MOD_ON_INT         PCIE2
+#define MOD_ON_MSK         PCMSK2
+#define MOD_ON_SIG         SIG_PIN_CHANGE2
 /* Module 1. */
 #define MOD1_RST_DDR       DDRC
 #define MOD1_RST_PORT      PORTC

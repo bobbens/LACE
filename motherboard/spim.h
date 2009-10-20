@@ -16,7 +16,7 @@ void spim_init (void);
  *    @param data Data to transmit.
  *    @param len Length of the data to transmit.
  */
-void spim_transmit( char *data, int len );
+void spim_transmit( int port, char *data, int len );
 
 
 /**

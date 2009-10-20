@@ -1,6 +1,6 @@
 
 
-#include "ioconf.h"
+#include "conf.h"
 
 #include "adc.h"
 

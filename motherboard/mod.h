@@ -8,7 +8,7 @@
  * @brief Module definition.
  */
 typedef struct module_s {
-   int ID; /**< Unique module identifier. */
+   int id; /**< Unique module identifier. */
    int version; /**< Version of module. */
 } module_t;
 
