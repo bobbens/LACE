@@ -7,30 +7,71 @@
 #include "mod.h"
 #include "pwm.h"
 
+#include <avr/wdt.h>
+#include <avr/sleep.h>
+#include <avr/interrupt.h>
+
+
+static uint8_t sched_flags = 0;
+
 
 /**
  * @brief Initializes all the subsystems.
  */
-void init (void)
+static void init (void)
 {
-   /* ADC. */
-   adc_init();
+   /*
+    * Initialize subsystems.
+    */
+   adc_init(); /* ADC. */
+   pwm_init(); /* PWM. */
+   mod_init(); /* Modules. */
 
-   /* PWM. */
-   pwm_init();
+   /* Set sleep mode. */
+   set_sleep_mode( SLEEP_MODE_IDLE );
 
-   /* Modules. */
-   mod_init();
+   /* Set up watchdog timer. */
+   wdt_reset(); /* Just in case. */
+   wdt_enable(WDTO_15MS);
+
+   /* Enable interrupts. */
+   sei();
 }
 
 
 /**
  * @brief Main entry point.
  */
-void main (void)
+int main (void)
 {
+   uint8_t flags;
+
+   /* Disable watchdog timer since it doesn't always get reset on restart. */
+   wdt_disable();     
+
+   /* Initialize the MCU. */
    init();
 
    for (;;) {
+      /* Atomic test to see if has anything to do. */
+      cli();
+      if (sched_flags != 0) {
+
+         /* Atomic store temporary flags and reset real flags in case we run a bit late. */
+         flags = sched_flags;
+         sched_flags = 0;
+         sei(); /* Restart interrupts. */
+
+         /* Run scheduler. */
+         /* sched_run( flags ); */
+      }
+      /* Sleep. */
+      else {
+         /* Atomic sleep as specified on the documentation. */
+         sleep_enable();
+         sei();
+         sleep_cpu();
+         sleep_disable();
+      }
    }
 }
