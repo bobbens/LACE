@@ -24,14 +24,14 @@ endif
 #
 #       FUSES
 #
-EFUSE := 0xFD
+EFUSE := 0xFC
 #       7 6 5 4 3 2 1 0
-# efuse 1 1 1 1 1 1 0 1 = 0xFD
+# efuse 1 1 1 1 1 1 0 0 = 0xFC
 #       | | | | | | | |
 #       | | | | | | | +-> BODLEVEL0 \
 #       | | | | | | |               |
 #       | | | | | | +---> BODLEVEL1 |-> BOD Enabled
-#       | | | | | |                 |   Min 2.5V  Typical 2.7V  Max 2.9V
+#       | | | | | |                 |   Min 4.1V  Typical 4.3V  Max 4.5V
 #       | | | | | +-----> BODLEVEL2 /
 #       | | | | |                
 #       +-+-+-+-+-------> Unused
@@ -134,7 +134,7 @@ PROJECT  := lace_motherboard
 
 PRG      := $(PROJECT)
 
-SRC      := adc.c core.c event.c mod.c pwm.c spim.c
+SRC      := adc.c core.c event.c mod.c pwm.c rs232.c spim.c
 ASRC     := 
 GCCLIB   :=
 OBJS     := $(SRC:.c=.o)
