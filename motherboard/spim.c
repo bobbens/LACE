@@ -9,7 +9,7 @@
 
 
 typedef struct ring_buffer_s {
-   char buf[ RING_BUFFER_LEN ];
+   char buf[ SPI_BUFFER_LEN ];
    int start;
    int end;
 } ring_buffer_t;
@@ -33,7 +33,7 @@ static __inline void ring_clear( ring_buffer_t *buf )
  */
 static __inline void ring_put( ring_buffer_t *buf, char c )
 {
-   buf->end = (buf->end + 1) % RING_BUFFER_LEN;
+   buf->end = (buf->end + 1) & (SPI_BUFFER_LEN-1);
    buf->buf[ buf->end ] = c;
 }
 /**
@@ -41,7 +41,7 @@ static __inline void ring_put( ring_buffer_t *buf, char c )
  */
 static __inline char ring_get( ring_buffer_t *buf )
 {
-   buf->start = (buf->start + 1) % RING_BUFFER_LEN;
+   buf->start = (buf->start + 1) & (SPI_BUFFER_LEN-1);
    return buf->buf[ buf->start ];
 }
 /**
