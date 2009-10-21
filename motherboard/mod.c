@@ -17,6 +17,12 @@ static module_t mod_data[2] = {
 };
 
 
+/*
+ * Prototypes.
+ */
+static void mod_detect( int mod );
+
+
 void mod_initIO (void)
 {
    /*
@@ -36,11 +42,32 @@ void mod_initIO (void)
    MOD2_ON_DDR   &= ~_BV(MOD2_ON_P);
 }
 
+
 /**
  * @brief On signal handler.
  */
 ISR(MOD_ON_SIG)
 {
+   /* Handle module 1. */
+   if (mod_data[0].on != (MOD1_ON_PIN & _BV(MOD1_ON_P))) {
+      mod_data[0].on       = MOD1_ON_PIN & _BV(MOD1_ON_P);
+      if (mod_data[0].on)
+         mod_detect( 1 );
+      else {
+         mod_data[0].id       = MODULE_ID_NONE;
+         mod_data[0].version  = 0;
+      }
+   }
+   /* Handle module 2. */
+   if (mod_data[1].on != (MOD2_ON_PIN & _BV(MOD2_ON_P))) {
+      mod_data[1].on       = MOD2_ON_PIN & _BV(MOD2_ON_P);
+      if (mod_data[1].on)
+         mod_detect( 2 );
+      else {
+         mod_data[1].id       = MODULE_ID_NONE;
+         mod_data[1].version  = 1;
+      }
+   }
 }
 
 
@@ -49,6 +76,13 @@ ISR(MOD_ON_SIG)
  */
 static void mod_detect( int mod )
 {
+   module_t *m;
+
+   /* Comfort. */
+   m = &mod_data[mod-1];
+
+   /* Try to run the classic commands. */
+
 }
 
 
@@ -66,10 +100,12 @@ void mod_init (void)
    spim_init();
 
    /* Detect card 1. */
+   mod_data[0].on = MOD1_ON_PIN & _BV(MOD1_ON_P);
    if (MOD1_ON_PIN & _BV(MOD1_ON_P))
       mod_detect( 1 );
 
    /* Detect card 2. */
+   mod_data[1].on = MOD2_ON_PIN & _BV(MOD2_ON_P);
    if (MOD2_ON_PIN & _BV(MOD2_ON_P))
       mod_detect( 2 );
 }

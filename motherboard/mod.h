@@ -10,6 +10,7 @@
 typedef struct module_s {
    int id; /**< Unique module identifier. */
    int version; /**< Version of module. */
+   int on; /**< On status of the module. */
 } module_t;
 
 
