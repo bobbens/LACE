@@ -10,5 +10,11 @@
 void adc_init (void);
 
 
+/**
+ * @brief Starts an ADC conversion.
+ */
+void adc_start( int channel );
+
+
 #endif /* _ADC_H */
 

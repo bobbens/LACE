@@ -44,7 +44,7 @@ typedef struct event_module_s {
  */
 typedef struct event_adc_s {
    event_type_t type; /**< Type of the event. */
-   int port; /**< ADC port generating the event. */
+   int channel; /**< ADC port generating the event. */
 } event_adc_t;
 
 
