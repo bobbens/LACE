@@ -82,7 +82,7 @@ void spim_init (void)
 /**
  * @brief Signal handler indicating transfer complete.
  */
-ISR(SIG_SPI)
+ISR( SPI_STC_vect )
 {
    event_t evt;
 

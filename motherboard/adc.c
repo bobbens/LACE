@@ -40,7 +40,7 @@ void adc_init (void)
 /**
  * @brief ADC conversion complete.
  */
-ISR(SIG_ADC)
+ISR( ADC_vect )
 {
    event_t evt;
 

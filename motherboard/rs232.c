@@ -103,7 +103,7 @@ void rs232_put0( char c )
 /**
  * @brief USART0 recieve data interrupt.
  */
-ISR( SIG_USART_RECV )
+ISR( USART0_RX_vect )
 {
    /* Add new data. */
    if (!ring_full( &usart0_in )) {
@@ -118,7 +118,7 @@ ISR( SIG_USART_RECV )
 /**
  * @brief USART1 transfer data interrupt.
  */
-ISR( SIG_USART_DATA )
+ISR( USART0_UDRE_vect )
 {
    /* Send more data. */
    if (!ring_empty( &usart0_out )) {
