@@ -10,14 +10,20 @@
 
 typedef struct ring_buffer_s {
    char buf[ SPI_BUFFER_LEN ];
-   int start;
-   int end;
+   int head; /**< Head of the buffer. */
+   int tail; /**< Tail of the buffer. */
 } ring_buffer_t;
 
 
-static ring_buffer_t spi_out = { .start = 0, .end = 0 };
-static ring_buffer_t spi_in  = { .start = 0, .end = 0 };
-static int spi_port = 0; /**< Current port sending on. */
+/**
+ * @brief Outgoing SPI master buffer.
+ */
+static ring_buffer_t spi_out = { .head = 0, .tail = 0 };
+/**
+ * @brief Incoming SPI master buffer.
+ */
+static ring_buffer_t spi_in  = { .head = 0, .tail = 0 };
+static int spi_port = 0; /**< Current port stailing on. */
 
 
 /**
@@ -25,38 +31,38 @@ static int spi_port = 0; /**< Current port sending on. */
  */
 static __inline void ring_clear( ring_buffer_t *buf )
 {
-   buf->start  = 0;
-   buf->end    = 0;
+   buf->head = 0;
+   buf->tail = 0;
 }
 /**
  * @brief Adds a character to the ring buffer.
  */
 static __inline void ring_put( ring_buffer_t *buf, char c )
 {
-   buf->end = (buf->end + 1) & (SPI_BUFFER_LEN-1);
-   buf->buf[ buf->end ] = c;
+   buf->tail = (buf->tail + 1) & (SPI_BUFFER_LEN-1);
+   buf->buf[ buf->tail ] = c;
 }
 /**
  * @brief Gets a character from the ring buffer.
  */
 static __inline char ring_get( ring_buffer_t *buf )
 {
-   buf->start = (buf->start + 1) & (SPI_BUFFER_LEN-1);
-   return buf->buf[ buf->start ];
+   buf->head = (buf->head + 1) & (SPI_BUFFER_LEN-1);
+   return buf->buf[ buf->head ];
 }
 /**
  * @brief Checks to see if the ring buffer is empty.
  */
 static __inline int ring_empty( ring_buffer_t *buf )
 {
-   return (buf->start == buf->end);
+   return (buf->head == buf->tail);
 }
 /**
  * @brief Checks to see if the ring buffer is full.
  */
 static __inline int ring_full( ring_buffer_t *buf )
 {
-   return (buf->end+1 == buf->start);
+   return (buf->tail+1 == buf->head);
 }
 
 
@@ -91,7 +97,7 @@ ISR(SIG_SPI)
       /* Disable SPI. */
       SPCR         &= ~_BV(SPE);
 
-      /* Send event. */
+      /* End transmission event. */
       evt.type      = EVENT_TYPE_SPI;
       evt.spi.port  = spi_port;
       event_push( &evt );
