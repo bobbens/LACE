@@ -9,11 +9,11 @@
 
 
 /* SPI Master. */
-#define SPI_BUFFER_LEN           32
+#define SPI_BUFFER_LEN           32 /* Must be power of two. */
 
 
 /* Event. */
-#define EVENT_STACK_SIZE         8
+#define EVENT_STACK_SIZE         8 /* Size of the event stack. */
 
 
 #include "ioconf.h"

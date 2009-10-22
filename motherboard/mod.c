@@ -10,7 +10,9 @@
 #include <avr/interrupt.h>
 
 
-/* Internal module list. */
+/**
+ * @brief Internal module list.
+ */
 static module_t mod_data[2] = {
    { .id = MODULE_ID_NONE, .version = 0x00 },
    { .id = MODULE_ID_NONE, .version = 0x00 }
@@ -29,15 +31,15 @@ void mod_initIO (void)
     * We start them offand disable them.
     */
    /* Module 1. */
-   MOD1_SS_PORT  |= _BV(MOD1_SS_P);
-   MOD1_SS_DDR   |= _BV(MOD1_SS_P);
-   MOD1_RST_DDR  |= _BV(MOD1_RST_P);
+   MOD1_SS_PORT  |=  _BV(MOD1_SS_P);
+   MOD1_SS_DDR   |=  _BV(MOD1_SS_P);
+   MOD1_RST_DDR  |=  _BV(MOD1_RST_P);
    MOD1_RST_PORT &= ~_BV(MOD1_RST_P);
    MOD1_ON_DDR   &= ~_BV(MOD1_ON_P);
    /* Module 2. */
-   MOD2_SS_PORT  |= _BV(MOD2_SS_P);
-   MOD2_SS_DDR   |= _BV(MOD2_SS_P);
-   MOD2_RST_DDR  |= _BV(MOD2_RST_P);
+   MOD2_SS_PORT  |=  _BV(MOD2_SS_P);
+   MOD2_SS_DDR   |=  _BV(MOD2_SS_P);
+   MOD2_RST_DDR  |=  _BV(MOD2_RST_P);
    MOD2_RST_PORT &= ~_BV(MOD2_RST_P);
    MOD2_ON_DDR   &= ~_BV(MOD2_ON_P);
 }
@@ -101,12 +103,12 @@ void mod_init (void)
 
    /* Detect card 1. */
    mod_data[0].on = MOD1_ON_PIN & _BV(MOD1_ON_P);
-   if (MOD1_ON_PIN & _BV(MOD1_ON_P))
+   if (mod_data[0].on)
       mod_detect( 1 );
 
    /* Detect card 2. */
    mod_data[1].on = MOD2_ON_PIN & _BV(MOD2_ON_P);
-   if (MOD2_ON_PIN & _BV(MOD2_ON_P))
+   if (mod_data[1].on)
       mod_detect( 2 );
 }
 
