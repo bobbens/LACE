@@ -122,8 +122,6 @@ void motor_init (void)
    TCCR0A = _BV(WGM00) | _BV(WGM01); /* Fast PWM mode. */
    /*TCCR0B = _BV(CS01)  | _BV(CS00);*/ /* 64 prescaler */
    TCCR0B = _BV(CS01); /* 8 prescaler. */
-   TIMSK0 = _BV(TOIE0) | /* Enable overflow interrupt on timer 0. */
-            _BV(OCIE0A) | _BV(OCIE0B); /* Enable compare interrupts. */
    /* Start both motors stopped. */
    OCR0A  = 0;
    OCR0B  = 0;
@@ -168,7 +166,7 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
       return 0;
    }
 
-   /* Process the feedback.
+   /* Linearization of the feedback.
     *
     *    ticks[20kHz]   N encoder turn        1 second
     * X  ------------ * -------------- * -------------------   ===>
