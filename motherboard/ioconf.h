@@ -8,6 +8,7 @@
 #include <avr/io.h>
 
 
+/* CPU frequency. */
 #define F_CPU              20000000UL
 
 
@@ -72,3 +73,5 @@
 
 
 #endif /* _IOCONF_H */
+
+

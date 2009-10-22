@@ -20,6 +20,9 @@ static uint8_t sched_flags = 0;
  */
 static void init (void)
 {
+   /* Disable some subsystems. */
+   PRR = _BV(PRTWI); /* Disable the TWI. */
+
    /*
     * Initialize subsystems.
     */
@@ -32,7 +35,7 @@ static void init (void)
 
    /* Set up watchdog timer. */
    wdt_reset(); /* Just in case. */
-   wdt_enable(WDTO_15MS);
+   wdt_enable( WDTO_15MS );
 
    /* Enable interrupts. */
    sei();
@@ -75,3 +78,5 @@ int main (void)
       }
    }
 }
+
+
