@@ -7,14 +7,23 @@
 #include <avr/interrupt.h>
 
 
+/**
+ * @brief Ring buffer for the communication.
+ */
 typedef struct ring_buffer_s {
-   char buf[ USART0_RING_BUFFER_LEN ];
-   int head;
-   int tail;
+   char buf[ USART0_RING_BUFFER_LEN ]; /**< Actual buffer. */
+   int head; /**< Head of the buffer. */
+   int tail; /**< Tail of the buffer. */
 } ring_buffer_t;
 
 
+/**
+ * @brief Outgoing buffer for the USART0.
+ */
 static ring_buffer_t usart0_out = { .head = 0, .tail = 0 };
+/**
+ * @brief Incoming buffer for the USART0.
+ */
 static ring_buffer_t usart0_in  = { .head = 0, .tail = 0 };
 
 
@@ -31,7 +40,7 @@ static __inline void ring_clear( ring_buffer_t *buf )
  */
 static __inline void ring_put( ring_buffer_t *buf, char c )
 {
-   buf->tail = (buf->tail + 1) & (RING_BUFFER_LEN-1);
+   buf->tail = (buf->tail + 1) & (USART0_RING_BUFFER_LEN-1);
    buf->buf[ buf->tail ] = c;
 }
 /**
@@ -39,7 +48,7 @@ static __inline void ring_put( ring_buffer_t *buf, char c )
  */
 static __inline char ring_get( ring_buffer_t *buf )
 {
-   buf->head = (buf->head + 1) & (RING_BUFFER_LEN-1);
+   buf->head = (buf->head + 1) & (USART0_RING_BUFFER_LEN-1);
    return buf->buf[ buf->head ];
 }
 /**
