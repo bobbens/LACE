@@ -7,6 +7,7 @@
 #include "mod.h"
 #include "pwm.h"
 #include "servo.h"
+#include "rs232.h"
 
 #include <avr/wdt.h>
 #include <avr/sleep.h>
@@ -33,7 +34,7 @@ static void init (void)
     */
    adc_init(); /* ADC. */
    pwm_init(); /* PWM. */
-   mod_init(); /* Modules. */
+   /*mod_init();*/ /* Modules. */
 
    /* Set sleep mode. */
    set_sleep_mode( SLEEP_MODE_IDLE );
@@ -49,6 +50,30 @@ static void init (void)
 }
 
 
+static int recv_pos        = 0;
+static uint16_t recv_pwm   = 0;
+/**
+ * @brief Handles data reception.
+ */
+static void recv( char c )
+{
+   /* Check for packet start. */
+   if (recv_pos==0) {
+      if (c == 0x80)
+         recv_pos = 1;
+      return;
+   }
+   else if (recv_pos==1) {
+      recv_pwm = c<<8;
+   }
+   else if (recv_pos==2) {
+      recv_pwm += c;
+      servo_pwm1A( recv_pwm );
+      recv_pos = 0;
+   }
+}
+
+
 /**
  * @brief Main entry point.
  */
@@ -61,12 +86,15 @@ int main (void)
 
    /* Initialize the MCU. */
    init();
-
    servo_init1();
+
+   /* Set recieve function callback. */
+   rs232_init0( USART_9_6k );
+   rs232_setRecv0( recv );
+
    while (1) {
       _delay_ms( 500. );
       LED0_TOGGLE();
-      servo_update();
    }
 
    for (;;) {
@@ -80,7 +108,7 @@ int main (void)
          sei(); /* Restart interrupts. */
 
          /* Run scheduler. */
-         /* sched_run( flags ); */
+         /*sched_run( flags );*/
       }
       /* Sleep. */
       else {
