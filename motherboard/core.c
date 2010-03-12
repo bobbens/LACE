@@ -6,10 +6,12 @@
 #include "event.h"
 #include "mod.h"
 #include "pwm.h"
+#include "servo.h"
 
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
 
 static uint8_t sched_flags = 0;
@@ -23,6 +25,9 @@ static void init (void)
    /* Disable some subsystems. */
    PRR = _BV(PRTWI); /* Disable the TWI. */
 
+   /* Initialize the LED. */
+   LED0_INIT();
+
    /*
     * Initialize subsystems.
     */
@@ -34,8 +39,10 @@ static void init (void)
    set_sleep_mode( SLEEP_MODE_IDLE );
 
    /* Set up watchdog timer. */
+#if 0
    wdt_reset(); /* Just in case. */
    wdt_enable( WDTO_15MS );
+#endif
 
    /* Enable interrupts. */
    sei();
@@ -54,6 +61,13 @@ int main (void)
 
    /* Initialize the MCU. */
    init();
+
+   servo_init1();
+   while (1) {
+      _delay_ms( 500. );
+      LED0_TOGGLE();
+      servo_update();
+   }
 
    for (;;) {
       /* Atomic test to see if has anything to do. */

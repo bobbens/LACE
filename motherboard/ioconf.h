@@ -28,11 +28,14 @@
 
 
 /* LED. */
+#define LED0_DDR           DDRB
 #define LED0_PORT          PORTB
 #define LED0               PB2
-#define LED0_ON()          LED0_PORT &= ~LED0
-#define LED0_OFF()         LED0_PORT |=  LED0
-#define LED0_STATUS()      (LED0_PORT & LED0)
+#define LED0_INIT()        LED0_DDR |= _BV(LED0)
+#define LED0_ON()          LED0_PORT &= ~_BV(LED0)
+#define LED0_OFF()         LED0_PORT |=  _BV(LED0)
+#define LED0_TOGGLE()      LED0_PORT ^= _BV(LED0)
+#define LED0_STATUS()      (LED0_PORT & _BV(LED0))
 
 
 /* SPI. */
