@@ -53,6 +53,10 @@ char rs232_get0 (void);
  *    @param c Character to put in the TX buffer.
  */
 void rs232_put0( char c );
+/**
+ * @brief Sets a callback function when an rs232 byte is recieved.
+ */
+void rs232_setRecv0( void (*recvFunc)(char) );
 
 
 

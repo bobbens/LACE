@@ -4,6 +4,7 @@
 
 #include "rs232.h"
 
+#include <string.h>
 #include <avr/interrupt.h>
 
 
@@ -25,6 +26,12 @@ static ring_buffer_t usart0_out = { .head = 0, .tail = 0 };
  * @brief Incoming buffer for the USART0.
  */
 static ring_buffer_t usart0_in  = { .head = 0, .tail = 0 };
+
+
+/**
+ * @brief Handles incoming data for the USART0.
+ */
+static void (*usart0_recv)(char) = NULL;
 
 
 /**
@@ -100,11 +107,22 @@ void rs232_put0( char c )
 }
 
 
+void rs232_setRecv0( void (*recvFunc)(char) )
+{
+   usart0_recv = recvFunc;
+}
+
+
 /**
  * @brief USART0 recieve data interrupt.
  */
 ISR( USART0_RX_vect )
 {
+   /* Recieve function trumps buffer. */
+   if (usart0_recv != NULL) {
+      usart0_recv( UDR0 );
+   }
+
    /* Add new data. */
    if (!ring_full( &usart0_in )) {
       ring_put( &usart0_in, UDR0 );
