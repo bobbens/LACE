@@ -12,6 +12,7 @@
 
 #include "ioconf.h"
 #include "comm.h"
+#include "uart.h"
 #include "adc.h"
 #include "motors.h"
 #include "encoder.h"
@@ -32,10 +33,10 @@
  *  10 kHz = 20 kHz / 2
  */
 static uint16_t sched_counter = 0; /**< Scheduler counter. */
-#define SCHED_CONTROL_DIVIDER       3600 /**< High level control divider. */
+#define SCHED_CONTROL_DIVIDER       600 /**< High level control divider. */
 #define SCHED_MOTOR_DIVIDER         60  /**< Motor control divider. */
 #define SCHED_HEARTBEAT_DIVIDER     200 /**< Divider for heartbeat. */
-#define SCHED_MAX_DIVIDER           3600 /**< Overflow amount for scheduler divider. */
+#define SCHED_MAX_DIVIDER           600 /**< Overflow amount for scheduler divider. */
 /* Scheduler state flags. */
 static volatile unsigned int sched_flags  = 0; /**< Scheduler flags. */
 #define SCHED_HEARTBEAT             (1<<0) /**< HEARTBEAT Task. */
@@ -220,7 +221,7 @@ static void init (void)
    LED1_INIT();
 
    /* Set the motors. */
-   motor_set( 50, 0 );
+   motor_set( 50, 50 );
 
    /* Sensors init. */
 #if 0
@@ -255,7 +256,6 @@ static void init (void)
 /**
  * @brief Entry point.
  */
-/*static FILE mystdout = FDEV_SETUP_STREAM(uart_putc, NULL, _FDEV_SETUP_WRITE);*/
 int main (void)
 {
 #if 0
@@ -283,17 +283,22 @@ int main (void)
       OCR0B    = i;
    }
 #endif
+#if 0
    LED0_INIT();
    LED1_INIT();
    LED0_ON();
    LED1_OFF();
+   /*uart_init( UART_BAUD_SELECT(9600, F_CPU ) );*/
+   /*rs232_init0( USART_4_8k );*/
    comm_init();
+   sei();
    while (1) {
-      printf("Hello world!\n");
+      printf("Hello World!\n");
       _delay_ms(1000.);
       LED0_TOG();
       LED1_TOG();
    }
+#endif
    uint8_t flags;
 
    /* Disable watchdog timer since it doesn't always get reset on restart. */

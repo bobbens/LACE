@@ -8,6 +8,9 @@
 #include "encoder.h"
 
 
+#define ABS(x) ((x)>0)?(x):-(x)
+
+
 /*
  * Motor Truth table:
  *
@@ -50,7 +53,6 @@
  */
 typedef struct motor_s {
    /* Target. */
-   int8_t dir; /**< Target direction. */
    uint16_t target; /**< Target velocity. */
 
    /* Internal usage variables. */
@@ -203,7 +205,7 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
    else
       pwm = output;
 
-   /* It's inverted. */
+   /* Return result. */
    return pwm;
 }
 
@@ -211,7 +213,7 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
 /**
  * @brief Runs the control routine on both motors.
  */
-__inline void motor_control (void)
+void motor_control (void)
 {
    /* Control loop. */
    OCR0A = _motor_control( &mot0, &enc0 );
@@ -225,34 +227,38 @@ __inline void motor_control (void)
 void motor_set( int16_t motor_0, int16_t motor_1 )
 {
    /* Motor 0. */
-   mot0.target  = motor_0;
+   mot0.target  = ABS(motor_0);
    mot0.e_accum = 0; /* Clear accumulator just in case. */
    if (motor_0 == 0) {
       TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0)); /* Disable PWM output. */
       MOTOR0_BRAKE();
    }
    else {
-      TCCR0A |= _BV(COM0A0); /* Activate PWM output again. */
       if (motor_0 > 0) {
+         TCCR0A |= _BV(COM0A1); /* Non-inverting. */
+         TCCR0A &= ~_BV(COM0A0);
          MOTOR0_PORT2 &= ~_BV(MOTOR0_IN2); /* Forward mode. */
       }
       else if (motor_0 < 0) {
+         TCCR0A |= _BV(COM0A1) | _BV(COM0A0); /* Inverting. */
          MOTOR0_PORT2 |=  _BV(MOTOR0_IN2); /* Backwards mode. */
       }
    }
    /* Motor 1. */
-   mot1.target  = motor_1;
+   mot1.target  = ABS(motor_1);
    mot1.e_accum = 0; /* Clear accumulator just in case. */
    if (motor_1 == 0) {
-      TCCR1A &= ~(_BV(COM1A1) | _BV(COM1A1)); /* Disable PWM output. */
+      TCCR0A &= ~(_BV(COM0B1) | _BV(COM0B0)); /* Disable PWM output. */
       MOTOR1_BRAKE();
    }
    else {
-      TCCR1A |= _BV(COM1A1); /* Activate PWM output again. */
       if (motor_1 > 0) {
+         TCCR0A |= _BV(COM0B1); /* Non-inverting. */
+         TCCR0A &= ~_BV(COM0B0);
          MOTOR1_PORT2 &= ~_BV(MOTOR1_IN2); /* Forward mode. */
       }
       else if (motor_1 < 0) {
+         TCCR0A |= _BV(COM0B1) | _BV(COM0B0); /* Inverting. */
          MOTOR1_PORT2 |=  _BV(MOTOR1_IN2); /* Backwards mode. */
       }
    }
