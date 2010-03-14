@@ -59,14 +59,18 @@ static void recv( char c )
 {
    /* Check for packet start. */
    if (recv_pos==0) {
-      if (c == 0x80)
+      if (c == 0x80) {
+         rs232_put0( c );
          recv_pos = 1;
+      }
       return;
    }
    else if (recv_pos==1) {
+      rs232_put0( c );
       recv_pwm = c<<8;
    }
    else if (recv_pos==2) {
+      rs232_put0( c );
       recv_pwm += c;
       servo_pwm1A( recv_pwm );
       recv_pos = 0;
@@ -90,6 +94,11 @@ int main (void)
 
    /* Set recieve function callback. */
    rs232_init0( USART_9_6k );
+   rs232_put0( 'h' );
+   rs232_put0( 'e' );
+   rs232_put0( 'l' );
+   rs232_put0( 'l' );
+   rs232_put0( 'o' );
    rs232_setRecv0( recv );
 
    while (1) {

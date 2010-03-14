@@ -134,7 +134,7 @@ ISR( USART0_RX_vect )
 
 
 /**
- * @brief USART1 transfer data interrupt.
+ * @brief USART0 transfer data interrupt.
  */
 ISR( USART0_UDRE_vect )
 {
