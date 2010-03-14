@@ -72,8 +72,10 @@ static void control_update (void)
    b = motor_1>>8;
    printf("Motors: %d x %d\n", a, b);
    */
+   /*
    printf("Motors: %u x %u\n", OCR0A, OCR0B);
    printf("Encoders: %u x %u\n", enc0.last_tick, enc1.last_tick);
+   */
 }
 
 
@@ -82,9 +84,6 @@ static void control_update (void)
  *    H E A R T B E A T
  *
  */
-#define HEARTBEAT_DDR      DDRB     /**< Heartbeat ddr register. */
-#define HEARTBEAT_PORT     PORTB    /**< Heartbeat port register. */
-#define HEARTBEAT_LED      PB2      /**< Heartbeat LED pin. */
 static uint16_t heartbeat_counter = 0; /**< Heartbeat counter. */
 static uint16_t heartbeat_target  = 0; /**< Heartbeat target. */
 /**
@@ -93,9 +92,9 @@ static uint16_t heartbeat_target  = 0; /**< Heartbeat target. */
 static void heartbeat_init (void)
 {
    heartbeat_counter = 0;
-   HEARTBEAT_PORT &= ~_BV(HEARTBEAT_LED); /* Set pin value to 0. */
-   HEARTBEAT_DDR  |= _BV(HEARTBEAT_LED); /* Set pin as output. */
-   heartbeat_set( 100 );
+   LED0_ON();
+   LED1_OFF();
+   heartbeat_set( 50 );
 }
 /**
  * @brief Sets the heartbeat rate, should be in 1/100 seconds.
@@ -113,10 +112,8 @@ static void heartbeat_update (void)
 {
    heartbeat_counter++;
    if (heartbeat_counter >= heartbeat_target) {
-      if (HEARTBEAT_PORT & _BV(HEARTBEAT_LED))
-         HEARTBEAT_PORT &= ~_BV(HEARTBEAT_LED);
-      else
-         HEARTBEAT_PORT |=  _BV(HEARTBEAT_LED);
+      LED0_TOG();
+      LED1_TOG();
       heartbeat_counter = 0;
    }
 }
@@ -219,6 +216,7 @@ static void init (void)
 {
    int reset_source;
 
+#if 0
    /* Initialize communication. */
    comm_init();
    printf( "Motor control board online...\n" );
@@ -234,6 +232,7 @@ static void init (void)
       printf("External Reset\n");
    if (reset_source & _BV(PORF))
       printf("Power-on Reset\n"); 
+#endif
 
    /* Initialize the scheduler. */
    sched_init();
@@ -244,6 +243,13 @@ static void init (void)
    /* Motor subsystem. */
    motor_init();
    encoder_init();
+
+   /* Enable LED. */
+   LED0_INIT();
+   LED1_INIT();
+
+   /* Set the motors. */
+   motor_set( 50, 50 );
 
    /* Sensors init. */
 #if 0
