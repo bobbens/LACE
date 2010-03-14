@@ -64,18 +64,8 @@ static void control_update (void);
  */
 static void control_update (void)
 {
-   /*
-   int16_t motor_0, motor_1;
-   int a, b;
-   motor_get( &motor_0, &motor_1 );
-   a = motor_0>>8;
-   b = motor_1>>8;
-   printf("Motors: %d x %d\n", a, b);
-   */
-   /*
-   printf("Motors: %u x %u\n", OCR0A, OCR0B);
-   printf("Encoders: %u x %u\n", enc0.last_tick, enc1.last_tick);
-   */
+   printf("M: %u x %u\n", OCR0A, OCR0B);
+   printf("E: %u x %u\n", enc0.last_tick, enc1.last_tick);
 }
 
 
@@ -215,25 +205,6 @@ static void sched_run( uint8_t flags )
 static void init (void)
 {
    int reset_source;
-
-#if 0
-   /* Initialize communication. */
-   comm_init();
-   printf( "Motor control board online...\n" );
-
-   /* Check why we reset. */
-   reset_source = MCUSR; 
-   MCUSR = _BV(WDRF) | _BV(BORF) | _BV(EXTRF) | _BV(PORF); /* Clear flags. */
-   if (reset_source & _BV(WDRF))
-      printf("Watchdog Reset\n");
-   if (reset_source & _BV(BORF))
-      printf("Brownout Reset\n");
-   if (reset_source & _BV(EXTRF))
-      printf("External Reset\n");
-   if (reset_source & _BV(PORF))
-      printf("Power-on Reset\n"); 
-#endif
-
    /* Initialize the scheduler. */
    sched_init();
 
@@ -249,7 +220,7 @@ static void init (void)
    LED1_INIT();
 
    /* Set the motors. */
-   motor_set( 50, 50 );
+   motor_set( 50, 0 );
 
    /* Sensors init. */
 #if 0
@@ -258,14 +229,71 @@ static void init (void)
    /*sensors_init();*/
 #endif
 
+   /* Initialize communication. */
+   comm_init();
+
+   /* Enable interrupts. */
+   sei();
+
+   printf( "Motor control board online...\n" );
+   /* Check why we reset. */
+   reset_source = MCUSR; 
+   MCUSR = _BV(WDRF) | _BV(BORF) | _BV(EXTRF) | _BV(PORF); /* Clear flags. */
+#if 0
+   if (reset_source & _BV(WDRF))
+      printf("Watchdog Reset\n");
+   if (reset_source & _BV(BORF))
+      printf("Brownout Reset\n");
+   if (reset_source & _BV(EXTRF))
+      printf("External Reset\n");
+   if (reset_source & _BV(PORF))
+      printf("Power-on Reset\n"); 
+#endif
 }
 
 
 /**
  * @brief Entry point.
  */
+/*static FILE mystdout = FDEV_SETUP_STREAM(uart_putc, NULL, _FDEV_SETUP_WRITE);*/
 int main (void)
 {
+#if 0
+   int i;
+   LED0_INIT();
+   LED1_INIT();
+   LED0_ON();
+   LED1_OFF();
+   MOTOR0_DDR1 |= _BV(MOTOR0_IN1);
+   MOTOR0_DDR2 |= _BV(MOTOR0_IN2);
+   MOTOR1_DDR1 |= _BV(MOTOR1_IN1);
+   MOTOR1_DDR2 |= _BV(MOTOR1_IN2);
+   TCCR0A = _BV(COM0A1) | _BV(COM0B1) |
+            _BV(WGM00) | _BV(WGM01); /* Fast PWM mode. */
+   TCCR0B = _BV(CS01); /* 8 prescaler. */
+   i        = 0;
+   OCR0A    = i;
+   OCR0B    = i;
+   while (1) {
+      _delay_ms(500.);
+      LED0_TOG();
+      LED1_TOG();
+      i       += 10;
+      OCR0A    = i;
+      OCR0B    = i;
+   }
+#endif
+   LED0_INIT();
+   LED1_INIT();
+   LED0_ON();
+   LED1_OFF();
+   comm_init();
+   while (1) {
+      printf("Hello world!\n");
+      _delay_ms(1000.);
+      LED0_TOG();
+      LED1_TOG();
+   }
    uint8_t flags;
 
    /* Disable watchdog timer since it doesn't always get reset on restart. */
@@ -280,9 +308,6 @@ int main (void)
    /* Set up watchdog timer. */
    wdt_reset(); /* Just in case. */
    wdt_enable(WDTO_15MS);
-
-   /* Enable interrupts. */
-   sei();
 
    /* Main loop. */
    while (1) {
