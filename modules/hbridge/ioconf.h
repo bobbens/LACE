@@ -6,6 +6,23 @@
 
 #include <avr/io.h>
 
+/*
+ * LEDs
+ */
+#define LED0_PORT    PORTB
+#define LED0_DDR     DDRB
+#define LED0_PIN     PB0
+#define LED1_PORT    PORTB
+#define LED1_DDR     DDRB
+#define LED1_PIN     PB1
+#define LED0_INIT()  LED0_DDR  |= _BV(LED0_PIN)
+#define LED0_OFF()   LED0_PORT |= _BV(LED0_PIN)
+#define LED0_ON()    LED0_PORT &= ~_BV(LED0_PIN)
+#define LED0_TOG()   LED0_PORT ^= _BV(LED0_PIN)
+#define LED1_INIT()  LED1_DDR  |= _BV(LED1_PIN)
+#define LED1_OFF()   LED1_PORT |= _BV(LED1_PIN)
+#define LED1_ON()    LED1_PORT &= ~_BV(LED1_PIN)
+#define LED1_TOG()   LED1_PORT ^= _BV(LED1_PIN)
 
 /*
  * Motors.
@@ -16,11 +33,11 @@
 #  define MOTOR0_IN1         PD6
 #  define MOTOR0_DDR2        DDRC
 #  define MOTOR0_PORT2       PORTC
-#  define MOTOR0_IN2         PC5
+#  define MOTOR0_IN2         PC4
 /* Motor 1. */
 #  define MOTOR1_DDR1        DDRD
 #  define MOTOR1_PORT1       PORTD
-#  define MOTOR1_IN1         PD4
+#  define MOTOR1_IN1         PD5
 #  define MOTOR1_DDR2        DDRC
 #  define MOTOR1_PORT2       PORTC
 #  define MOTOR1_IN2         PC5
