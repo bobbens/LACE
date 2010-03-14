@@ -119,7 +119,8 @@ void motor_init (void)
     *    f_pwm = 20 MHz / (256 * 8)  = 9.76 kHz
     *    f_pwm = 20 MHz / (256 * 64) = 1.22 kHz
     */
-   TCCR0A = _BV(WGM00) | _BV(WGM01); /* Fast PWM mode. */
+   TCCR0A = /*_BV(COM0A1) | _BV(COM0B1) |*/ /* Non-inverting output. */
+            _BV(WGM00) | _BV(WGM01); /* Fast PWM mode. */
    /*TCCR0B = _BV(CS01)  | _BV(CS00);*/ /* 64 prescaler */
    TCCR0B = _BV(CS01); /* 8 prescaler. */
    /* Start both motors stopped. */
@@ -191,14 +192,14 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
       mot->e_accum = -mot->windup;
 
    /* Run control - PI. */
-   output   = (error * mot->kp) >> 4; /* P */
-   output  += (mot->e_accum * mot->ki) >> 4; /* I */
+   output   = (error * (int16_t)mot->kp) >> 4; /* P */
+   output  += (mot->e_accum * (int16_t)mot->ki) >> 4; /* I */
 
    /* Get PWM output, note we can't do backwards. */
    if (output > 255)
       pwm = 0xFF;
-   else if (output < 128)
-      pwm = 128;
+   else if (output < 0)
+      pwm = 0;
    else
       pwm = output;
 
