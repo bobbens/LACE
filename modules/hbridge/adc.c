@@ -3,8 +3,11 @@
 
 #include <avr/io.h>
 
-/* Initializes ADC subsystem. */
-void adc_init(void)
+
+/**
+ * @brief Initializes ADC subsystem.
+ */
+void adc_init (void)
 {
 	/* Select reference voltage:
     * AVCC with external capacitor at AREF pin */
@@ -15,8 +18,11 @@ void adc_init(void)
             _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); /* 128 prescaler. */
 }
 
-/* ADC single conversion routine. */
-uint16_t adc_start_conversion(uint8_t channel)
+
+/**
+ * @brief ADC single conversion routine.
+ */
+uint16_t adc_start_conversion( uint8_t channel )
 {
 	uint16_t adc_value;
 

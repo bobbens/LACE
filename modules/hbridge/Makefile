@@ -134,7 +134,7 @@ PROJECT  := lace_hbridge
 
 PRG      := $(PROJECT)
 
-SRC      := adc.c comm.c uart.c core.c encoder.c motors.c
+SRC      := adc.c comm.c uart.c spis.c core.c encoder.c motors.c
 ASRC     := 
 GCCLIB   :=
 OBJS     := $(SRC:.c=.o)
