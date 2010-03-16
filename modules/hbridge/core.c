@@ -221,7 +221,7 @@ static void init (void)
    LED1_INIT();
 
    /* Set the motors. */
-   motor_set( 50, 50 );
+   /*motor_set( 50, 50 );*/
 
    /* Sensors init. */
 #if 0
