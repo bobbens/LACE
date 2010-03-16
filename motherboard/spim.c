@@ -70,7 +70,15 @@ void spim_init (void)
 {
    /* Configure pins. */
    SPI_DDR &= ~_BV(SPI_MISO); /* MISO as input. */
-   SPI_DDR |= _BV(SPI_MOSI) | _BV(SPI_MISO); /* MOSI and SCK as output. */
+   SPI_DDR |= _BV(SPI_MOSI) | _BV(SPI_SCK) | _BV(SPI_SS); /* MOSI and SCK as output. */
+
+   /* Initialize slave SS pins. */
+   MOD1_SS_DDR |= _BV(MOD1_SS_P);
+   MOD2_SS_DDR |= _BV(MOD2_SS_P);
+
+   /* Unselect slaves. */
+   MOD1_SS_PORT |=  _BV(MOD1_SS_P);
+   MOD2_SS_PORT |=  _BV(MOD2_SS_P);
 
    /* Configure the SPI. */
    SPCR     =  _BV(SPIE) | /* Enable interrupts. */
@@ -117,7 +125,7 @@ void spim_transmit( int port, char *data, int len )
    ring_clear( &spi_out );
 
    /* Fill output buffer. */
-   for (i=0; i<len; i++)
+   for (i=1; i<len; i++)
       ring_put( &spi_out, data[i] );
 
    /* Set the port. */
@@ -136,6 +144,9 @@ void spim_transmit( int port, char *data, int len )
 
    /* Enable SPI. */
    SPCR |= _BV(SPE);
+
+   /* Write first byte. */
+   SPDR  = data[0];
 }
 
 
