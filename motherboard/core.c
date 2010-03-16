@@ -87,6 +87,37 @@ static void recv( char c )
  */
 int main (void)
 {
+   LED0_INIT();
+   /* Configure module SS. */
+   MOD1_SS_DDR  |= _BV(MOD1_SS_P); /* Mod1 SS as output. */
+   MOD2_SS_DDR  |= _BV(MOD2_SS_P); /* Mod2 SS as output. */
+   MOD1_SS_PORT |= _BV(MOD1_SS_P);
+   MOD2_SS_PORT |= _BV(MOD2_SS_P);
+   /* Configure pins. */
+   SPI_DDR &= ~_BV(SPI_MISO); /* MISO as input. */
+   SPI_DDR |= _BV(SPI_MOSI) | _BV(SPI_SCK) | _BV(SPI_SS); /* MOSI and SCK as output. */
+   /* Configure the SPI. */
+   SPCR     =  _BV(SPE) | /* Enable SPI. */
+               /*_BV(SPIE) |*/ /* Enable interrupts. */
+               _BV(MSTR) | /* Master mode set */
+               _BV(SPR1) | _BV(SPR0); /* fck/128 */
+   volatile char io_reg;
+   io_reg = SPSR;
+   io_reg = SPDR;
+   _delay_ms( 500. );
+   sei();
+   while (1) {
+      MOD1_SS_PORT &= ~_BV(MOD1_SS_P);
+
+      SPDR = 0x80;
+      while (!(SPSR & _BV(SPIF)));
+
+      MOD1_SS_PORT |= _BV(MOD1_SS_P);
+      _delay_ms( 500. );
+      LED0_TOGGLE();
+   }
+
+
    uint8_t flags;
 
    /* Disable watchdog timer since it doesn't always get reset on restart. */
@@ -95,13 +126,6 @@ int main (void)
    /* Initialize the MCU. */
    init();
    /*servo_init1();*/
-
-   char buf[] = { 0x80, 0x00, 0x40, 0x00, 0x40 };
-   while (1) {
-      spim_transmit( 1, buf, sizeof(buf) );
-      _delay_ms( 500. );
-      LED0_TOGGLE();
-   }
 
    for (;;) {
       /* Atomic test to see if has anything to do. */
