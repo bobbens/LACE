@@ -216,6 +216,11 @@ static void init (void)
    motor_init();
    encoder_init();
 
+   /* Power management. */
+   PRR = _BV(PRTWI) | /* Disable TWI. */
+         _BV(PRTIM2) | /* Disable Timer 2. */
+         _BV(PRADC); /* Disable ADC. */
+
    /* Enable LED. */
    LED0_INIT();
    LED1_INIT();
