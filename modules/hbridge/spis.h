@@ -7,7 +7,7 @@
 /**
  * @brief Initializes the SPI as master.
  */
-void spim_init (void);
+void spis_init (void);
 
 
 /**
