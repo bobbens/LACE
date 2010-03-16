@@ -8,6 +8,7 @@
 #include "pwm.h"
 #include "servo.h"
 #include "rs232.h"
+#include "spim.h"
 
 #include <avr/wdt.h>
 #include <avr/sleep.h>
@@ -32,6 +33,7 @@ static void init (void)
    /*
     * Initialize subsystems.
     */
+   spim_init(); /* SPI Master. */
    adc_init(); /* ADC. */
    pwm_init(); /* PWM. */
    /*mod_init();*/ /* Modules. */
@@ -50,6 +52,7 @@ static void init (void)
 }
 
 
+#if 0
 static int recv_pos        = 0;
 static uint16_t recv_pwm   = 0;
 /**
@@ -76,6 +79,7 @@ static void recv( char c )
       recv_pos = 0;
    }
 }
+#endif
 
 
 /**
@@ -90,18 +94,11 @@ int main (void)
 
    /* Initialize the MCU. */
    init();
-   servo_init1();
+   /*servo_init1();*/
 
-   /* Set recieve function callback. */
-   rs232_init0( USART_9_6k );
-   rs232_put0( 'h' );
-   rs232_put0( 'e' );
-   rs232_put0( 'l' );
-   rs232_put0( 'l' );
-   rs232_put0( 'o' );
-   rs232_setRecv0( recv );
-
+   char buf[] = { 0x80, 0x00, 0x40, 0x00, 0x40 };
    while (1) {
+      spim_transmit( 1, buf, sizeof(buf) );
       _delay_ms( 500. );
       LED0_TOGGLE();
    }
