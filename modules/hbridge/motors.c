@@ -235,11 +235,13 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
    }
    else {
       if (motor_0 > 0) {
+         OCR0A  = 0;
          TCCR0A |= _BV(COM0A1); /* Non-inverting. */
          TCCR0A &= ~_BV(COM0A0);
          MOTOR0_PORT2 &= ~_BV(MOTOR0_IN2); /* Forward mode. */
       }
       else if (motor_0 < 0) {
+         OCR0A  = 0xFF;
          TCCR0A |= _BV(COM0A1) | _BV(COM0A0); /* Inverting. */
          MOTOR0_PORT2 |=  _BV(MOTOR0_IN2); /* Backwards mode. */
       }
@@ -253,11 +255,13 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
    }
    else {
       if (motor_1 > 0) {
+         OCR0B  = 0;
          TCCR0A |= _BV(COM0B1); /* Non-inverting. */
          TCCR0A &= ~_BV(COM0B0);
          MOTOR1_PORT2 &= ~_BV(MOTOR1_IN2); /* Forward mode. */
       }
       else if (motor_1 < 0) {
+         OCR0B  = 0xFF;
          TCCR0A |= _BV(COM0B1) | _BV(COM0B0); /* Inverting. */
          MOTOR1_PORT2 |=  _BV(MOTOR1_IN2); /* Backwards mode. */
       }
