@@ -201,7 +201,7 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
    if (output > 255)
       pwm = 0xFF;
    else if (output < 0)
-      pwm = 0;
+      pwm = 0x00;
    else
       pwm = output;
 
