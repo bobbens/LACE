@@ -42,7 +42,6 @@ ISR( ENCODER_VECT )
       enc1.last_tick = enc1.cur_tick; /* Last tick is current tick. */
       enc1.cur_tick  = 0; /* Reset counter. */
    }
-
 }
 
 

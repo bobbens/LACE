@@ -1,6 +1,7 @@
 
 #include "motors.h"
 
+#include <stdio.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
@@ -51,7 +52,7 @@
 /**
  * @brief Motor control structure.
  */
-typedef struct motor_s {
+typedef volatile struct motor_s {
    /* Target. */
    uint16_t target; /**< Target velocity. */
 

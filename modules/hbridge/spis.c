@@ -5,6 +5,9 @@
 #include <avr/interrupt.h>
 
 #include "motors.h"
+#include "uart.h"
+#include "ioconf.h"
+#include "hbridge.h"
 
 
 /*
@@ -17,20 +20,9 @@
 #define DD_SS     PB2   /* Slave SS pin. */
 
 
-/*
- * The commands.
- */
-#define HB_CMD_NONE     0x00
-#define HB_CMD_VERSION  0x01
-#define HB_CMD_MODESET  0x02
-#define HF_CMD_MODEGET  0x03
-#define HB_CMD_MOTORSET 0x04
-#define HB_CMD_MOTORGET 0x05
-
-
 static volatile char spis_cmd = 0;
-static volatile int spis_pos = 0;
-static volatile uint8_t spis_buf[5];
+static volatile int spis_pos  = 0;
+static uint8_t spis_buf[5];
 
 
 /**
@@ -38,7 +30,7 @@ static volatile uint8_t spis_buf[5];
  */
 void spis_init (void)
 {
-   volatile char io_reg;
+   /*volatile char io_reg;*/
 
    /* Set MISO output, all others input */
    DDR_SPI |= _BV(DD_MISO);
@@ -48,8 +40,8 @@ void spis_init (void)
    SPCR     = _BV(SPE) | _BV(SPIE);
 
    /* Clear the SPDF bit. */
-   io_reg   = SPSR;
-   io_reg   = SPDR;
+   /*io_reg   = SPSR;
+   io_reg   = SPDR;*/
 }
 
 
@@ -58,8 +50,9 @@ void spis_init (void)
  */
 ISR( SPI_STC_vect )
 {
-   volatile char c = SPDR;
-   int16_t *mota, *motb;
+   int16_t mota, motb;
+   char c = SPDR;
+   uart_putc( c );
 
    /* Not processing a command currently. */
    if (spis_cmd == HB_CMD_NONE) {
@@ -81,18 +74,23 @@ ISR( SPI_STC_vect )
 
    /* Handle data. */
    else {
+
       switch (spis_cmd) {
          case HB_CMD_VERSION:
-            SPDR = 0x01;
+            SPDR     = 0x01;
+            spis_pos = 0;
             spis_cmd = 0;
             break;
 
          case HB_CMD_MOTORSET:
             spis_buf[ spis_pos++ ] = c;
+            SPDR  = c;
             if (spis_pos >= 4) {
-               mota = (int16_t*)(&spis_buf[0]);
-               motb = (int16_t*)(&spis_buf[2]);
-               motor_set( *mota, *motb );
+               mota  = spis_buf[0]<<8;
+               mota += spis_buf[1];
+               motb  = spis_buf[2]<<8;
+               motb += spis_buf[3];
+               motor_set( mota, motb );
                spis_cmd = 0;
                spis_pos = 0;
             }
@@ -104,6 +102,7 @@ ISR( SPI_STC_vect )
       }
 
    }
+
 }
 
 

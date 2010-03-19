@@ -16,6 +16,8 @@
 #include "adc.h"
 #include "motors.h"
 #include "encoder.h"
+#include "spis.h"
+#include "sched.h"
 
 
 /*
@@ -32,16 +34,12 @@
  *  1 kHz  = 20 kHz / 20
  *  10 kHz = 20 kHz / 2
  */
-static uint16_t sched_counter = 0; /**< Scheduler counter. */
-#define SCHED_CONTROL_DIVIDER       600 /**< High level control divider. */
+static volatile uint16_t sched_counter = 0; /**< Scheduler counter. */
 #define SCHED_MOTOR_DIVIDER         60  /**< Motor control divider. */
 #define SCHED_HEARTBEAT_DIVIDER     200 /**< Divider for heartbeat. */
 #define SCHED_MAX_DIVIDER           600 /**< Overflow amount for scheduler divider. */
 /* Scheduler state flags. */
-static volatile unsigned int sched_flags  = 0; /**< Scheduler flags. */
-#define SCHED_HEARTBEAT             (1<<0) /**< HEARTBEAT Task. */
-#define SCHED_CONTROL               (1<<1) /**< High level control task. */
-#define SCHED_MOTOR                 (1<<2) /**< Motor control task. */
+volatile unsigned int sched_flags  = 0; /**< Scheduler flags. */
 
 
 /*
@@ -54,20 +52,6 @@ static void sched_run( uint8_t flags );
 static void heartbeat_init (void);
 static void heartbeat_set( uint16_t rate );
 static void heartbeat_update (void);
-/* Control. */
-static void control_update (void);
-
-
-/*
- *
- *    C O N T R O L
- *
- */
-static void control_update (void)
-{
-   printf("M: %u x %u\n", OCR0A, OCR0B);
-   printf("E: %u x %u\n", enc0.last_tick, enc1.last_tick);
-}
 
 
 /*
@@ -107,6 +91,9 @@ static void heartbeat_update (void)
       LED1_TOG();
       heartbeat_counter = 0;
    }
+
+   /* Reset watchdog. */
+   wdt_reset();
 }
 
 
@@ -137,14 +124,9 @@ ISR( TIMER1_OVF_vect )
    /* Do some scheduler stuff here. */
    if (!(sched_counter % SCHED_HEARTBEAT_DIVIDER))
       sched_flags |= SCHED_HEARTBEAT;
-   if (!(sched_counter % SCHED_CONTROL_DIVIDER))
-      sched_flags |= SCHED_CONTROL;
    if (!(sched_counter % SCHED_MOTOR_DIVIDER))
       sched_flags |= SCHED_MOTOR;
    sched_counter = (sched_counter+1) % SCHED_MAX_DIVIDER;
-
-   /* Reset watchdog. */
-   wdt_reset();
 }
 /**
  * @brief Initializes the scheduler on Timer1.
@@ -175,6 +157,8 @@ static void sched_init (void)
    /* Initialize flags. */
    sched_flags = 0;
 }
+
+
 /**
  * @brief Runs the scheduler.
  *
@@ -191,9 +175,6 @@ static void sched_run( uint8_t flags )
    if (flags & SCHED_HEARTBEAT) {
       heartbeat_update();
    }
-   if (flags & SCHED_CONTROL) {
-      control_update();
-   }
    if (flags & SCHED_MOTOR) {
       motor_control();
    }
@@ -206,11 +187,16 @@ static void sched_run( uint8_t flags )
 static void init (void)
 {
    int reset_source;
-   /* Initialize the scheduler. */
-   sched_init();
+
+   /* Enable LED. */
+   LED0_INIT();
+   LED1_INIT();
 
    /* Heartbeat init. */
    heartbeat_init();
+
+   /* Communication subsystem. */
+   spis_init();
 
    /* Motor subsystem. */
    motor_init();
@@ -220,13 +206,6 @@ static void init (void)
    PRR = _BV(PRTWI) | /* Disable TWI. */
          _BV(PRTIM2) | /* Disable Timer 2. */
          _BV(PRADC); /* Disable ADC. */
-
-   /* Enable LED. */
-   LED0_INIT();
-   LED1_INIT();
-
-   /* Set the motors. */
-   /*motor_set( 50, 50 );*/
 
    /* Sensors init. */
 #if 0
@@ -238,6 +217,9 @@ static void init (void)
    /* Initialize communication. */
    comm_init();
 
+   /* Initialize the scheduler. */
+   sched_init();
+
    /* Enable interrupts. */
    sei();
 
@@ -245,16 +227,14 @@ static void init (void)
    /* Check why we reset. */
    reset_source = MCUSR; 
    MCUSR = _BV(WDRF) | _BV(BORF) | _BV(EXTRF) | _BV(PORF); /* Clear flags. */
-#if 0
-   if (reset_source & _BV(WDRF))
-      printf("Watchdog Reset\n");
-   if (reset_source & _BV(BORF))
-      printf("Brownout Reset\n");
-   if (reset_source & _BV(EXTRF))
-      printf("External Reset\n");
    if (reset_source & _BV(PORF))
       printf("Power-on Reset\n"); 
-#endif
+   else if (reset_source & _BV(EXTRF))
+      printf("External Reset\n");
+   else if (reset_source & _BV(BORF))
+      printf("Brownout Reset\n");
+   else if (reset_source & _BV(WDRF))
+      printf("Watchdog Reset\n");
 }
 
 
@@ -302,6 +282,18 @@ int main (void)
       _delay_ms(1000.);
       LED0_TOG();
       LED1_TOG();
+   }
+#endif
+#if 0
+   LED0_INIT();
+   LED1_INIT();
+   LED0_ON();
+   LED1_OFF();
+   spis_init();
+   sei();
+   while (1) {
+      _delay_ms( 500. );
+      LED0_TOG();
    }
 #endif
    uint8_t flags;
