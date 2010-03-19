@@ -92,7 +92,7 @@ AVRDUDE_WRITE_FUSE := \
 #	COMPILING C
 #
 CC			:= avr-gcc
-OPTLEVEL := s
+OPTLEVEL := 2
 CFLAGS	:= \
 			-g 						\
 			-mmcu=$(MCU)			\
