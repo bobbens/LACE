@@ -8,66 +8,24 @@
 #include <avr/interrupt.h>
 
 
-typedef struct ring_buffer_s {
-   char buf[ SPI_BUFFER_LEN ];
-   int head; /**< Head of the buffer. */
-   int tail; /**< Tail of the buffer. */
-} ring_buffer_t;
+/*
+ * Buffers.
+ */
+static char spi_outBuf[ SPI_BUFFER_LEN ]; /**< Outgoing SPI master buffer. */
+static char spi_inBuf[ SPI_BUFFER_LEN ]; /**< Incoming SPI master buffer. */
+static volatile int  spi_len    = 0; /**< Current write SPI master buffer. */
+static volatile int  spi_inPos  = 0; /**< Incoming SPI master buffer position. */
+static volatile int  spi_outPos = 0; /**< Outgoing SPI master buffer position. */
+static volatile int  spi_port   = 0; /**< Currently selected SPI port. */
 
 
 /**
- * @brief Outgoing SPI master buffer.
+ * @brief Initializes the SPI perpihperal as master.
  */
-static ring_buffer_t spi_out = { .head = 0, .tail = 0 };
-/**
- * @brief Incoming SPI master buffer.
- */
-static ring_buffer_t spi_in  = { .head = 0, .tail = 0 };
-static int spi_port = 0; /**< Current port stailing on. */
-
-
-/**
- * @brief Clears a ring buffer.
- */
-static __inline void ring_clear( ring_buffer_t *buf )
-{
-   buf->head = 0;
-   buf->tail = 0;
-}
-/**
- * @brief Adds a character to the ring buffer.
- */
-static __inline void ring_put( ring_buffer_t *buf, char c )
-{
-   buf->tail = (buf->tail + 1) & (SPI_BUFFER_LEN-1);
-   buf->buf[ buf->tail ] = c;
-}
-/**
- * @brief Gets a character from the ring buffer.
- */
-static __inline char ring_get( ring_buffer_t *buf )
-{
-   buf->head = (buf->head + 1) & (SPI_BUFFER_LEN-1);
-   return buf->buf[ buf->head ];
-}
-/**
- * @brief Checks to see if the ring buffer is empty.
- */
-static __inline int ring_empty( ring_buffer_t *buf )
-{
-   return (buf->head == buf->tail);
-}
-/**
- * @brief Checks to see if the ring buffer is full.
- */
-static __inline int ring_full( ring_buffer_t *buf )
-{
-   return (buf->tail+1 == buf->head);
-}
-
-
 void spim_init (void)
 {
+   /*volatile char io_reg;*/
+
    /* Configure pins. */
    SPI_DDR &= ~_BV(SPI_MISO); /* MISO as input. */
    SPI_DDR |= _BV(SPI_MOSI) | _BV(SPI_SCK) | _BV(SPI_SS); /* MOSI and SCK as output. */
@@ -81,9 +39,16 @@ void spim_init (void)
    MOD2_SS_PORT |=  _BV(MOD2_SS_P);
 
    /* Configure the SPI. */
-   SPCR     =  _BV(SPIE) | /* Enable interrupts. */
+   SPCR     =  /*_BV(SPE) |*/ /* Enable SPI. */
+               _BV(SPIE) | /* Enable interrupts. */
                _BV(MSTR) | /* Master mode set */
+               /*_BV(SPR0);*/ /* fck/8 */
                _BV(SPR1) | _BV(SPR0); /* fck/128 */
+
+      
+   /* Clear the SPDF bit. */
+   /*io_reg   = SPSR;
+   io_reg   = SPDR;*/
 }
 
 
@@ -95,10 +60,10 @@ ISR( SPI_STC_vect )
    event_t evt;
 
    /* Get last character. */
-   ring_put( &spi_in, SPDR );
+   spi_inBuf[ spi_outPos-1 ] = SPDR;
 
    /* Finished, so we break. */
-   if (ring_empty( &spi_out )) {
+   if (spi_outPos >= spi_len) {
       /* Unselect slaves. */
       MOD1_SS_PORT |=  _BV(MOD1_SS_P);
       MOD2_SS_PORT |=  _BV(MOD2_SS_P);
@@ -106,27 +71,33 @@ ISR( SPI_STC_vect )
       SPCR         &= ~_BV(SPE);
 
       /* End transmission event. */
+#if 0
       evt.type      = EVENT_TYPE_SPI;
       evt.spi.port  = spi_port;
       event_push( &evt );
+#endif
    }
 
    /* Get ready for next write. */
-   SPDR = ring_get( &spi_out );
+   SPDR = spi_outBuf[ spi_outPos++ ];
 }
 
 
-void spim_transmit( int port, char *data, int len )
+/**
+ * @brief Transmits data.
+ */
+void spim_transmit( int port, const char *data, int len )
 {
    int i;
 
    /* Clear buffers. */
-   ring_clear( &spi_in );
-   ring_clear( &spi_out );
+   spi_outPos = 1;
+   spi_inPos  = 0;
+   spi_len    = len;
 
    /* Fill output buffer. */
    for (i=1; i<len; i++)
-      ring_put( &spi_out, data[i] );
+      spi_outBuf[i] = data[i];
 
    /* Set the port. */
    spi_port = port;
@@ -140,6 +111,11 @@ void spim_transmit( int port, char *data, int len )
          MOD1_SS_PORT |=  _BV(MOD1_SS_P);
          MOD2_SS_PORT &= ~_BV(MOD2_SS_P);
          break;
+   
+      default:
+         MOD1_SS_PORT |= _BV(MOD1_SS_P);
+         MOD2_SS_PORT |= _BV(MOD2_SS_P);
+         break;
    }
 
    /* Enable SPI. */
@@ -150,15 +126,27 @@ void spim_transmit( int port, char *data, int len )
 }
 
 
+/**
+ * @brief Reads data.
+ */
 int spim_read( char *data, int max )
 {
    int i;
 
    i = 0;
-   while ((i < max) && !ring_empty( &spi_in ))
-      data[i++] = ring_get( &spi_in );
+   while ((i < max) && (spi_inPos < spi_len))
+      data[ i++ ] = spi_inBuf[ spi_inPos++ ];
 
    return i;
+}
+
+
+/**
+ * @brief SPI module is idle.
+ */
+int spim_idle (void)
+{
+   return (!(SPCR & _BV(SPE)));
 }
 
 
