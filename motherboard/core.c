@@ -9,6 +9,7 @@
 #include "servo.h"
 #include "rs232.h"
 #include "spim.h"
+#include "mod/dhb.h"
 
 #include <avr/wdt.h>
 #include <avr/sleep.h>
@@ -33,10 +34,9 @@ static void init (void)
    /*
     * Initialize subsystems.
     */
-   spim_init(); /* SPI Master. */
+   mod_init(); /* Modules. */
    adc_init(); /* ADC. */
    pwm_init(); /* PWM. */
-   /*mod_init();*/ /* Modules. */
 
    /* Set sleep mode. */
    set_sleep_mode( SLEEP_MODE_IDLE );
@@ -87,6 +87,7 @@ static void recv( char c )
  */
 int main (void)
 {
+#if 0
    LED0_INIT();
    /* Configure module SS. */
    MOD1_SS_DDR  |= _BV(MOD1_SS_P); /* Mod1 SS as output. */
@@ -116,7 +117,17 @@ int main (void)
       _delay_ms( 500. );
       LED0_TOGGLE();
    }
-
+#endif
+#if 0
+   dhb_init( 1 );
+   _delay_ms( 500. );
+   dhb_target( 1, 50, 50 );
+   LED0_TOGGLE();
+   while (1) {
+      _delay_ms( 500. );
+      LED0_TOGGLE();
+   }
+#endif
 
    uint8_t flags;
 
