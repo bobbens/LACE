@@ -30,6 +30,18 @@ void mod_init (void);
 
 
 /**
+ * @brief Turns on a module.
+ */
+void mod_on( int port );
+
+
+/**
+ * @brief Checks to see if there's a module in a port.
+ */
+int mod_detect( int port );
+
+
+/**
  * @brief Gets the module information from the module.
  *
  *    @param Number of module to get (starts with 1).

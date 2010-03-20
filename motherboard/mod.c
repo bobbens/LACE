@@ -90,3 +90,32 @@ void mod_init (void)
 }
 
 
+void mod_on( int port )
+{
+   switch (port) {
+      case 1:
+         MOD1_RST_PORT |= _BV(MOD1_RST_P);
+         break;
+      case 2:
+         MOD2_RST_PORT |= _BV(MOD2_RST_P);
+         break;
+      default:
+         return;
+   }
+}
+
+
+int mod_detect( int port )
+{
+   switch (port) {
+      case 1:
+         return MOD1_ON_PIN & _BV(MOD1_ON_P);
+      case 0:
+         return MOD2_ON_PIN & _BV(MOD2_ON_P);
+      default:
+         return 0;
+   }
+}
+
+
+
