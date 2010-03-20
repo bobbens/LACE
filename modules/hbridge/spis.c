@@ -3,10 +3,10 @@
 #include "spis.h"
 
 #include <avr/interrupt.h>
+#include <util/crc16.h>
 
-#include "motors.h"
-#include "uart.h"
 #include "ioconf.h"
+#include "motors.h"
 #include "hbridge.h"
 
 
@@ -20,8 +20,9 @@
 #define DD_SS     PB2   /* Slave SS pin. */
 
 
-static volatile char spis_cmd = 0;
-static volatile int spis_pos  = 0;
+static volatile char spis_cmd    = 0;
+static volatile int spis_pos     = 0;
+static volatile uint8_t spis_crc = 0;
 static uint8_t spis_buf[5];
 
 
@@ -52,7 +53,6 @@ ISR( SPI_STC_vect )
 {
    int16_t mota, motb;
    char c = SPDR;
-   uart_putc( c );
 
    /* Not processing a command currently. */
    if (spis_cmd == HB_CMD_NONE) {
@@ -69,6 +69,7 @@ ISR( SPI_STC_vect )
       else if (spis_pos==1) {
          spis_cmd = c;
          spis_pos = 0;
+         spis_crc = _crc_ibutton_update( 0, c );
       }
    }
 
@@ -78,31 +79,45 @@ ISR( SPI_STC_vect )
       switch (spis_cmd) {
          case HB_CMD_VERSION:
             SPDR     = 0x01;
+            spis_cmd = HB_CMD_NONE;
             spis_pos = 0;
-            spis_cmd = 0;
             break;
 
          case HB_CMD_MOTORSET:
-            spis_buf[ spis_pos++ ] = c;
-            SPDR  = c;
-            if (spis_pos >= 4) {
+            /* Still processing input. */
+            if (spis_pos < 4) {
+               /* Fill buffer. */
+               spis_buf[ spis_pos++ ] = c;
+               /* Update CRC. */
+               spis_crc = _crc_ibutton_update( spis_crc, c );
+               /* Echo recieved. */
+               SPDR     = c;
+            }
+            /* Handle command. */
+            else {
+               /* Check CRC. */
+               if (c != spis_crc)
+                  break;
+               /* Prepare arguments. */
                mota  = spis_buf[0]<<8;
                mota += spis_buf[1];
                motb  = spis_buf[2]<<8;
                motb += spis_buf[3];
+               /* Set motor. */
                motor_set( mota, motb );
-               spis_cmd = 0;
+               /* Clear command. */
+               spis_cmd = HB_CMD_NONE;
                spis_pos = 0;
             }
             break;
 
          default:
-            SPDR = 0x00;
+            SPDR     = 0x00;
+            spis_cmd = HB_CMD_NONE;
+            spis_pos = 0;
             break;
       }
-
    }
-
 }
 
 
