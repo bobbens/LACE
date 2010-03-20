@@ -71,11 +71,9 @@ ISR( SPI_STC_vect )
       SPCR         &= ~_BV(SPE);
 
       /* End transmission event. */
-#if 0
       evt.type      = EVENT_TYPE_SPI;
       evt.spi.port  = spi_port;
       event_push( &evt );
-#endif
    }
 
    /* Get ready for next write. */

@@ -17,7 +17,9 @@ typedef enum event_type_e {
    /* Module. */
    EVENT_TYPE_MODULE, /**< Module subsystem event. */
    /* ADC */
-   EVENT_TYPE_ADC /**< ADC event. */
+   EVENT_TYPE_ADC, /**< ADC event. */
+   /* Timer. */
+   EVENT_TYPE_TIMER, /**< Timer event. */
 } event_type_t;
 
 
@@ -48,6 +50,15 @@ typedef struct event_adc_s {
 } event_adc_t;
 
 
+/**
+ * @brief Timer event.
+ */
+typedef struct event_timer_s {
+   event_type_t type; /**< Type of the event. */
+   int timer; /**< Timer generating the event. */
+} event_timer_t;
+
+
 
 /**
  * @brief All the events.
@@ -57,6 +68,7 @@ typedef union event_u {
    event_spi_t spi; /**< SPI event. */
    event_module_t module; /**< Module event. */
    event_adc_t adc; /**< ADC event. */
+   event_timer_t timer; /**< Timer event. */
 } event_t;
 
 

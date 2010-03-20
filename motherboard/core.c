@@ -7,17 +7,17 @@
 #include "mod.h"
 #include "pwm.h"
 #include "servo.h"
-#include "rs232.h"
 #include "spim.h"
+#include "timer.h"
+#include "comm.h"
 #include "mod/dhb.h"
 
+#include <stdio.h>
+#include <string.h>
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-
-
-static uint8_t sched_flags = 0;
 
 
 /**
@@ -37,6 +37,13 @@ static void init (void)
    mod_init(); /* Modules. */
    adc_init(); /* ADC. */
    pwm_init(); /* PWM. */
+   comm_init(); /* Communication. */
+
+   /*
+    * Optional subsystems.
+    */
+   /*servo_init();*/ /* Servo motors on TIMER1. */
+   timer_init(); /* Timer infrastructure on TIMER0. */
 
    /* Set sleep mode. */
    set_sleep_mode( SLEEP_MODE_IDLE );
@@ -128,37 +135,51 @@ int main (void)
       LED0_TOGGLE();
    }
 #endif
-
-   uint8_t flags;
+   event_t evt;
 
    /* Disable watchdog timer since it doesn't always get reset on restart. */
    wdt_disable();     
 
    /* Initialize the MCU. */
-   init();
-   /*servo_init1();*/
+   /*init();*/
+
+   LED0_INIT();
+   comm_init();
+   sei();
+   /* Online. */
+   printf( "Exocore Apollo online...\n" );
+   for(;;) {
+      _delay_ms( 500. );
+      LED0_TOGGLE();
+   }
+
+   /* Start timer. */
+   timer_start( 0, 500, NULL );
 
    for (;;) {
       /* Atomic test to see if has anything to do. */
       cli();
-      if (sched_flags != 0) {
 
-         /* Atomic store temporary flags and reset real flags in case we run a bit late. */
-         flags = sched_flags;
-         sched_flags = 0;
-         sei(); /* Restart interrupts. */
+      /* Handle events. */
+      while (event_poll(&evt)) {
+         sei(); /* Reenable interrupts. */
+         switch (evt.type) {
+            case EVENT_TYPE_TIMER:
+               LED0_TOGGLE();
+               timer_start( 0, 500, NULL );
+               break;
 
-         /* Run scheduler. */
-         /*sched_run( flags );*/
+            default:
+               break;
+         }
       }
-      /* Sleep. */
-      else {
-         /* Atomic sleep as specified on the documentation. */
-         sleep_enable();
-         sei();
-         sleep_cpu();
-         sleep_disable();
-      }
+      sei();
+
+      /* Atomic sleep as specified on the documentation. */
+      sleep_enable();
+      sei();
+      sleep_cpu();
+      sleep_disable();
    }
 }
 

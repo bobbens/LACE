@@ -134,7 +134,7 @@ PROJECT  := lace_motherboard
 
 PRG      := $(PROJECT)
 
-SRC      := adc.c core.c event.c mod.c pwm.c rs232.c spim.c servo.c mod/dhb.c
+SRC      := adc.c core.c event.c mod.c pwm.c comm.c uart.c spim.c servo.c timer.c mod/dhb.c
 ASRC     := 
 GCCLIB   :=
 OBJS     := $(SRC:.c=.o)

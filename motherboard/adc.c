@@ -8,7 +8,7 @@
 #include <avr/interrupt.h>
 
 
-static int adc_channel     = 0; /**< Current ADC channel it's on. */
+static volatile int adc_channel     = 0; /**< Current ADC channel it's on. */
 
 
 /**
@@ -53,6 +53,9 @@ ISR( ADC_vect )
 }
 
 
+/**
+ * @brief Starts a conversion on a channel.
+ */
 void adc_start( int channel )
 {
    /* Save the ADC channel. */
