@@ -31,7 +31,7 @@ void adc_init (void)
    DIDR0  = 0xFF;
 
    /* Set up main register. */
-   ADCSRA = _BV(ADEN) | /* Enable ADC. */
+   ADCSRA = /*_BV(ADEN) |*/ /* Enable ADC. */
             _BV(ADIE) | /* Use interrupts. */
             _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); /* 128 prescaler. */
 }
@@ -50,6 +50,9 @@ ISR( ADC_vect )
 
    /* Push the event. */
    event_push( &evt );
+
+   /* Disable ADC. */
+   ADCSRA &= ~_BV(ADEN);
 }
 
 
@@ -63,6 +66,9 @@ void adc_start( int channel )
 
    /* Set ADC channel */
    ADMUX = (ADMUX & 0xF0) | adc_channel;
+
+   /* Enable ADC. */
+   ADCSRA |= _BV(ADEN);
 
    /* Start conversion */
    ADCSRA |= _BV(ADSC);
