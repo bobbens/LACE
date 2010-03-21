@@ -38,6 +38,7 @@ static void init (void)
    adc_init(); /* ADC. */
    pwm_init(); /* PWM. */
    comm_init(); /* Communication. */
+   event_init(); /* Events. */
 
    /*
     * Optional subsystems.
@@ -141,17 +142,10 @@ int main (void)
    wdt_disable();     
 
    /* Initialize the MCU. */
-   /*init();*/
+   init();
 
-   LED0_INIT();
-   comm_init();
-   sei();
    /* Online. */
    printf( "Exocore Apollo online...\n" );
-   for(;;) {
-      _delay_ms( 500. );
-      LED0_TOGGLE();
-   }
 
    /* Start timer. */
    timer_start( 0, 500, NULL );
@@ -172,8 +166,8 @@ int main (void)
             default:
                break;
          }
+         cli(); /* Disable for next check. */
       }
-      sei();
 
       /* Atomic sleep as specified on the documentation. */
       sleep_enable();
