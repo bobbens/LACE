@@ -4,6 +4,9 @@
 #  define _TIMER_H
 
 
+#include <stdint.h>
+
+
 /**
  * @file
  *
@@ -29,7 +32,7 @@ void timer_init (void);
  *    @param ms Milliseconds for the timer to wait.
  *    @param func Function callback when timer is up or NULL to not use.
  */
-void timer_start( int timer, int ms, void (*func)(int) );
+void timer_start( int timer, uint16_t ms, void (*func)(int) );
 
 
 /**
