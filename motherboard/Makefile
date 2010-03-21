@@ -1,32 +1,31 @@
 #########################################
 #
-#       CHIP DETAILS + AVRDUDE
+#		 CHIP DETAILS + AVRDUDE
 #
-MCU            := atmega324p
+MCU				:= atmega324p
 PROGRAMMER_MCU := m324p
 AVRDUDE_PROGRAMMERID := usbasp
-AVRDUDE_PORT   := /dev/parport0
+AVRDUDE_PORT	:= /dev/parport0
 
 #########################################
 #
 #	COMPILING C
 #
-CC             := avr-gcc
-OPTLEVEL       := s
-CFLAGS         := -mmcu=$(MCU)			\
-		            -O$(OPTLEVEL)			\
-		            -fpack-struct			\
-		            -fshort-enums			\
-		            -funsigned-bitfields	\
-		            -funsigned-char		\
-		            -W							\
-		            -Wall						\
-                  -Wextra              \
-		            -Wstrict-prototypes	\
-		            -I.                  \
-                  -I..                 \
-                  -Ilib/avrlib/conf    \
-                  -Ilib/avrlib
+CC				 := avr-gcc
+OPTLEVEL		 := s
+CFLAGS			:= -mmcu=$(MCU)			\
+						-O$(OPTLEVEL)			\
+						-fpack-struct			\
+						-fshort-enums			\
+						-funsigned-bitfields	\
+						-funsigned-char		\
+						-W							\
+						-Wall						\
+						-Wextra				  \
+						-Wstrict-prototypes	\
+						-I.						\
+						-I..					  \
+						-I../modules
 
 
 
@@ -34,45 +33,45 @@ CFLAGS         := -mmcu=$(MCU)			\
 #
 #	CLEANING UP
 #
-REMOVE         := $(RM)
+REMOVE			:= $(RM)
 
 
 
 #########################################
 #
-#       MISC VARIABLES
+#		 MISC VARIABLES
 #
 AVRDUDE			:= avrdude
-OBJCOPY        := avr-objcopy
-OBJDUMP        := avr-objdump
-HEXFORMAT      := ihex
-COPYOPTS       :=		-j .text			\
-		               -j .data			\
-		               -O $(HEXFORMAT)
-SIZE           := avr-size
-AVRSIM         := simulavr
-GDB            := avr-gdb
-PORT           := 1212
+OBJCOPY		  := avr-objcopy
+OBJDUMP		  := avr-objdump
+HEXFORMAT		:= ihex
+COPYOPTS		 :=		-j .text			\
+							-j .data			\
+							-O $(HEXFORMAT)
+SIZE			  := avr-size
+AVRSIM			:= simulavr
+GDB				:= avr-gdb
+PORT			  := 1212
 
 
 #########################################
 #
 #	PROJECT DETAILS
 #
-PROJECT        := lace_motherboard
+PROJECT		  := lace_motherboard
 
-PRG            := $(PROJECT)
+PRG				:= $(PROJECT)
 
-SRC            := core.c uart.c comm.c
+SRC				:= core.c uart.c comm.c event.c timer.c pwm.c adc.c spim.c mod.c mod/dhb.c
 
 
-OBJS           := $(SRC:.c=.o) $(AVRLIB:.c=.o) 
+OBJS			  := $(SRC:.c=.o) $(AVRLIB:.c=.o) 
 
-GDBINITFILE    := gdbinit-$(PRG)
+GDBINITFILE	 := gdbinit-$(PRG)
 
 #########################################
 #
-#       MAKE FUNCTIONS
+#		 MAKE FUNCTIONS
 #
 .PHONY: all hex elf writeflash verify install sim clean
 
@@ -99,11 +98,11 @@ writeflash:	hex
 			-U flash:w:$(PROJECT).hex:i
 
 verify:		hex
-	$(AVRDUDE) -p $(PROGRAMMER_MCU)         \
+	$(AVRDUDE) -p $(PROGRAMMER_MCU)			\
 			-c $(AVRDUDE_PROGRAMMERID) \
-			-P $(AVRDUDE_PORT)      \
+			-P $(AVRDUDE_PORT)		\
 			-n			\
-			-v                      \
+			-v							 \
 			-D			\
 			-U flash:v:$(PROJECT).hex:i
 
@@ -116,9 +115,9 @@ sim:		hex
 	@echo "file $(PRG).elf" > $(GDBINITFILE)
 	@echo "target remote localhost:$(PORT)" \
 		>> $(GDBINITFILE)
-	@echo "load"        >> $(GDBINITFILE) 
+	@echo "load"		  >> $(GDBINITFILE) 
 	@echo "break main"  >> $(GDBINITFILE)
-	@echo "continue"    >> $(GDBINITFILE)
+	@echo "continue"	 >> $(GDBINITFILE)
 
 	$(GDB) -x $(GDBINITFILE)
 
