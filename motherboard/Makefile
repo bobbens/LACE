@@ -2,111 +2,39 @@
 #
 #       CHIP DETAILS + AVRDUDE
 #
-AVRDUDE              := avrdude
-MCU                  := atmega324p
-PROGRAMMER_MCU       := m324p
+MCU            := atmega324p
+PROGRAMMER_MCU := m324p
 AVRDUDE_PROGRAMMERID := usbasp
-#AVRDUDE_PORT         := /dev/parport0
-
-
-#########################################
-#
-#       INTERNAL USAGE
-#
-AVRDUDE_FLAGS := -p $(PROGRAMMER_MCU) -c $(AVRDUDE_PROGRAMMERID) -v
-ifdef AVRDUDE_PORT
-AVRDUDE_FLAGS +=-P $(AVRDUDE_PORT)
-endif
-
-
-
-#########################################
-#
-#       FUSES
-#
-EFUSE := 0xFC
-#       7 6 5 4 3 2 1 0
-# efuse 1 1 1 1 1 1 0 0 = 0xFC
-#       | | | | | | | |
-#       | | | | | | | +-> BODLEVEL0 \
-#       | | | | | | |               |
-#       | | | | | | +---> BODLEVEL1 |-> BOD Enabled
-#       | | | | | |                 |   Min 4.1V  Typical 4.3V  Max 4.5V
-#       | | | | | +-----> BODLEVEL2 /
-#       | | | | |                
-#       +-+-+-+-+-------> Unused
-#
-HFUSE := 0xD9
-#       7 6 5 4 3 2 1 0
-# hfuse 1 1 0 1 1 0 0 1 = 0xD9
-#       | | | | | | | |
-#       | | | | | | | +-> BOOTRST --> Unprogrammed
-#       | | | | | | |
-#       | | | | | | +---> BOOTSZ0 --> Unprogrammed
-#       | | | | | |
-#       | | | | | +-----> BOOTSZ1 --> Unprogrammed
-#       | | | | |
-#       | | | | +-------> EESAVE ---> Unprogrammed
-#       | | | |
-#       | | | +---------> WDTON ----> Unprogrammed, not always on
-#       | | |
-#       | | +-----------> SPIEN ----> SPI enabled
-#       | |
-#       | +-------------> JTAGEN ---> JTAG disalbed
-#       |
-#       +---------------> OCDEN ----> OCD Disabled
-#
-LFUSE := 0xD7
-#       7 6 5 4 3 2 1 0
-# lfuse 1 1 0 1 0 1 1 1 = 0xD7
-#       | | | | | | | |
-#       | | | | | | | +-> CKSEL0 \
-#       | | | | | | |            |
-#       | | | | | | +---> CKSEL1 |
-#       | | | | | |              |--> External Crystal Oscillator at 8MHz<
-#       | | | | | +-----> CKSEL2 |
-#       | | | | |                |
-#       | | | | +-------> CKSEL3 /
-#       | | | |
-#       | | | +---------> SUT0  \
-#       | | |                   |---> Crystal Oscillator, BOD enabled
-#       | | +-----------> SUT1  /
-#       | |
-#       | +-------------> CKOUT ----> No clock output
-#       |
-#       +---------------> CKDIV8 ---> Don't divide by 8
-AVRDUDE_READ_FUSE := \
-	-U lfuse:r:-:i \
-	-U hfuse:r:-:i \
-	-U efuse:r:-:i \
-	-U lock:r:-:i 
-AVRDUDE_WRITE_FUSE := \
-	-U lfuse:w:$(LFUSE):m \
-	-U hfuse:w:$(HFUSE):m \
-	-U efuse:w:$(EFUSE):m
-
-
+AVRDUDE_PORT   := /dev/parport0
 
 #########################################
 #
 #	COMPILING C
 #
-CC			:= avr-gcc
-OPTLEVEL := 2
-CFLAGS	:= \
-			-g 						\
-			-mmcu=$(MCU)			\
-			-O$(OPTLEVEL)			\
-			-fpack-struct			\
-			-fshort-enums			\
-			-funsigned-bitfields	\
-			-funsigned-char		\
-			-W							\
-			-Wall						\
-			-Wextra              \
-			-Wstrict-prototypes	\
-			-I.                  \
-			-I../modules
+CC             := avr-gcc
+OPTLEVEL       := s
+CFLAGS         := -mmcu=$(MCU)			\
+		            -O$(OPTLEVEL)			\
+		            -fpack-struct			\
+		            -fshort-enums			\
+		            -funsigned-bitfields	\
+		            -funsigned-char		\
+		            -W							\
+		            -Wall						\
+                  -Wextra              \
+		            -Wstrict-prototypes	\
+		            -I.                  \
+                  -I..                 \
+                  -Ilib/avrlib/conf    \
+                  -Ilib/avrlib
+
+
+
+#########################################
+#
+#	CLEANING UP
+#
+REMOVE         := $(RM)
 
 
 
@@ -114,39 +42,39 @@ CFLAGS	:= \
 #
 #       MISC VARIABLES
 #
-OBJCOPY  := avr-objcopy
-OBJDUMP  := avr-objdump
-HEXFORMAT := ihex
-COPYOPTS :=		-j .text			\
-		         -j .data			\
-		         -O $(HEXFORMAT)
-SIZE     := avr-size
-AVRSIM   := simulavr
-GDB      := avr-gdb
-PORT     := 1212
+AVRDUDE			:= avrdude
+OBJCOPY        := avr-objcopy
+OBJDUMP        := avr-objdump
+HEXFORMAT      := ihex
+COPYOPTS       :=		-j .text			\
+		               -j .data			\
+		               -O $(HEXFORMAT)
+SIZE           := avr-size
+AVRSIM         := simulavr
+GDB            := avr-gdb
+PORT           := 1212
 
 
 #########################################
 #
 #	PROJECT DETAILS
 #
-PROJECT  := lace_motherboard
+PROJECT        := lace_motherboard
 
-PRG      := $(PROJECT)
+PRG            := $(PROJECT)
 
-SRC      := adc.c core.c event.c mod.c pwm.c comm.c uart.c spim.c servo.c timer.c mod/dhb.c
-ASRC     := 
-GCCLIB   :=
-OBJS     := $(SRC:.c=.o)
+SRC            := core.c uart.c comm.c
 
-GDBINITFILE := gdbinit-$(PRG)
+
+OBJS           := $(SRC:.c=.o) $(AVRLIB:.c=.o) 
+
+GDBINITFILE    := gdbinit-$(PRG)
 
 #########################################
 #
 #       MAKE FUNCTIONS
 #
-.PHONY: all hex elf writeflash fuses verify install sim clean
-
+.PHONY: all hex elf writeflash verify install sim clean
 
 all: $(PRG).hex
 
@@ -163,25 +91,22 @@ $(PRG).hex:	$(PRG).elf
 	$(OBJCOPY) $(COPYOPTS) $< $@
 
 writeflash:	hex
-	$(AVRDUDE) $(AVRDUDE_FLAGS) \
-			-e \
+	$(AVRDUDE) -p $(PROGRAMMER_MCU)	\
+			-e			\
+			-c $(AVRDUDE_PROGRAMMERID) \
+			-P $(AVRDUDE_PORT)	\
+			-v			\
 			-U flash:w:$(PROJECT).hex:i
 
 verify:		hex
-	$(AVRDUDE) $(AVRDUDE_FLAGS) \
-			-n	\
-			-D	\
+	$(AVRDUDE) -p $(PROGRAMMER_MCU)         \
+			-c $(AVRDUDE_PROGRAMMERID) \
+			-P $(AVRDUDE_PORT)      \
+			-n			\
+			-v                      \
+			-D			\
 			-U flash:v:$(PROJECT).hex:i
 
-fuses-read:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) \
-			-n	\
-			$(AVRDUDE_READ_FUSE)
-
-fuses-write:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) \
-			-u \
-			$(AVRDUDE_WRITE_FUSE)
 
 install:	writeflash
 
@@ -198,4 +123,11 @@ sim:		hex
 	$(GDB) -x $(GDBINITFILE)
 
 clean:
-	$(RM) $(OBJS) $(PRG).elf $(PRG).hex
+	$(REMOVE) $(OBJS) $(PRG).elf $(PRG).hex
+
+dox:
+	@doxygen
+	@make -C latex refman.pdf
+	@mv latex/refman.pdf doc/rBrain.pdf
+	@rm -r latex/
+

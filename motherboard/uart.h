@@ -24,43 +24,6 @@ LICENSE:
     
 ************************************************************************/
 
-/************************************************************************
-uart_available, uart_flush, uart1_available, and uart1_flush functions
-were adapted from the Arduino HardwareSerial.h library by Tim Sharpe on 
-11 Jan 2009.  The license info for HardwareSerial.h is as follows:
-
-  HardwareSerial.h - Hardware serial library for Wiring
-  Copyright (c) 2006 Nicholas Zambetti.  All right reserved.
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-************************************************************************/
-
-/************************************************************************
-Changelog for modifications made by Tim Sharpe, starting with the current
-  library version on his Web site as of 05/01/2009. 
-
-Date        Description
-=========================================================================
-05/12/2009  Added Arduino-style available() and flush() functions for both
-			supported UARTs.  Really wanted to keep them out of the library, so
-			that it would be as close as possible to Peter Fleury's original
-			library, but has scoping issues accessing internal variables from
-			another program.  Go C!
-
-************************************************************************/
-
 /** 
  *  @defgroup pfleury_uart UART Library
  *  @code #include <uart.h> @endcode
@@ -140,6 +103,7 @@ Date        Description
    @return  none
 */
 extern void uart_init(unsigned int baudrate);
+extern int uart_idle (void);
 
 
 /**
@@ -209,19 +173,6 @@ extern void uart_puts_p(const char *s );
  */
 #define uart_puts_P(__s)       uart_puts_p(PSTR(__s))
 
-/**
- *  @brief   Return number of bytes waiting in the receive buffer
- *  @param   none
- *  @return  bytes waiting in the receive buffer
- */
-extern int uart_available(void);
-
-/**
- *  @brief   Flush bytes waiting in receive buffer
- *  @param   none
- *  @return  none
- */
-extern void uart_flush(void);
 
 
 /** @brief  Initialize USART1 (only available on selected ATmegas) @see uart_init */
@@ -236,10 +187,6 @@ extern void uart1_puts(const char *s );
 extern void uart1_puts_p(const char *s );
 /** @brief  Macro to automatically put a string constant into program memory */
 #define uart1_puts_P(__s)       uart1_puts_p(PSTR(__s))
-/** @brief   Return number of bytes waiting in the receive buffer */
-extern int uart1_available(void);
-/** @brief   Flush bytes waiting in receive buffer */
-extern void uart1_flush(void);
 
 /**@}*/
 
