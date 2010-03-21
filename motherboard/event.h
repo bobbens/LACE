@@ -73,6 +73,12 @@ typedef union event_u {
 
 
 /**
+ * @brief Initializes the event subsystem.
+ */
+void event_init (void);
+
+
+/**
  * @brief Pushes an event onto the event stack.
  *
  *    @param evt Event to push onto stack.
