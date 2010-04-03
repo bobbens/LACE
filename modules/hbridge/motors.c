@@ -124,8 +124,8 @@ void motor_init (void)
     */
    TCCR0A = /*_BV(COM0A1) | _BV(COM0B1) |*/ /* Non-inverting output. */
             _BV(WGM00) | _BV(WGM01); /* Fast PWM mode. */
-   /*TCCR0B = _BV(CS01)  | _BV(CS00);*/ /* 64 prescaler */
-   TCCR0B = _BV(CS01); /* 8 prescaler. */
+   TCCR0B = _BV(CS01)  | _BV(CS00); /* 64 prescaler */
+   /*TCCR0B = _BV(CS01);*/ /* 8 prescaler. */
    /* Start both motors stopped. */
    OCR0A  = 0;
    OCR0B  = 0;
@@ -229,7 +229,6 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
 {
    /* Motor 0. */
    mot0.target  = ABS(motor_0);
-   mot0.e_accum = 0; /* Clear accumulator just in case. */
    if (motor_0 == 0) {
       TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0)); /* Disable PWM output. */
       MOTOR0_BRAKE();
@@ -249,7 +248,6 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
    }
    /* Motor 1. */
    mot1.target  = ABS(motor_1);
-   mot1.e_accum = 0; /* Clear accumulator just in case. */
    if (motor_1 == 0) {
       TCCR0A &= ~(_BV(COM0B1) | _BV(COM0B0)); /* Disable PWM output. */
       MOTOR1_BRAKE();
