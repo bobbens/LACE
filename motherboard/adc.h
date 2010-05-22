@@ -11,6 +11,12 @@ void adc_init (void);
 
 
 /**
+ * @brief Exits the ADC subsystem.
+ */
+void adc_exit (void);
+
+
+/**
  * @brief Starts an ADC conversion.
  */
 void adc_start( int channel );

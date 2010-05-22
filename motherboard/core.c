@@ -31,7 +31,7 @@ static void init (void)
    /* Disable some subsystems. */
    PRR = _BV(PRTWI) | /* Disable the TWI. */
          _BV(PRTIM0) | /* Disable the Timer 0. */
-         0;
+         _BV(PRADC); /* Disable ADC. */
 
    /* Initialize the LED. */
    LED0_INIT();

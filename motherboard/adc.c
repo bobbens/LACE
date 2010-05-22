@@ -23,6 +23,9 @@ static __inline void adc_initIO (void)
 
 void adc_init (void)
 {
+   /* Enable power. */
+   PRR &= ~_BV(PRADC);
+
    /* Select reference voltage:
     * AVCC with external capacitor at AREF pin */
    ADMUX  = _BV(REFS0);
@@ -34,6 +37,16 @@ void adc_init (void)
    ADCSRA = /*_BV(ADEN) |*/ /* Enable ADC. */
             _BV(ADIE) | /* Use interrupts. */
             _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); /* 128 prescaler. */
+}
+
+
+void adc_exit (void)
+{
+   /* Disable ADC. */
+   ADCSRA = 0;
+
+   /* Disable power. */
+   PRR |= _BV(PRADC);
 }
 
 
