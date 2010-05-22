@@ -130,7 +130,7 @@ PORT     := 1212
 #
 #	PROJECT DETAILS
 #
-PROJECT  := lace_hbridge
+PROJECT  := lace_dhb
 
 PRG      := $(PROJECT)
 
