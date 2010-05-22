@@ -11,6 +11,12 @@ void spim_init (void);
 
 
 /**
+ * @brief Exits the SPI subsystem.
+ */
+void spim_exit (void);
+
+
+/**
  * @brief Starts a transmission.
  */
 void spim_transmitStart (void);

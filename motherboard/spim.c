@@ -20,11 +20,12 @@ static volatile int  spi_port   = 0; /**< Currently selected SPI port. */
 
 
 /**
- * @brief Initializes the SPI perpihperal as master.
+ * @brief Initializes the SPI perpipheral as master.
  */
 void spim_init (void)
 {
-   /*volatile char io_reg;*/
+   /* Power down SPI peripheral. */
+   PRR &= ~_BV(PRSPI);
 
    /* Configure pins. */
    SPI_DDR &= ~_BV(SPI_MISO); /* MISO as input. */
@@ -44,11 +45,20 @@ void spim_init (void)
                _BV(MSTR) | /* Master mode set */
                /*_BV(SPR0);*/ /* fck/8 */
                _BV(SPR1) | _BV(SPR0); /* fck/128 */
+   SPSR     = 0;
+}
 
-      
-   /* Clear the SPDF bit. */
-   /*io_reg   = SPSR;
-   io_reg   = SPDR;*/
+
+/**
+ * @brief Exits the SPI subsystem.
+ */
+void spim_exit (void)
+{
+   /* Disable peripheral. */
+   SPCR  = 0;
+
+   /* Power down SPI peripheral. */
+   PRR  |= ~_BV(PRSPI);
 }
 
 
