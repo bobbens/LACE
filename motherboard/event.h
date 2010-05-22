@@ -20,6 +20,8 @@ typedef enum event_type_e {
    EVENT_TYPE_ADC, /**< ADC event. */
    /* Timer. */
    EVENT_TYPE_TIMER, /**< Timer event. */
+   /* Sentinal for maximum. */
+   EVENT_TYPE_MAX /**< Maximum amount of events. */
 } event_type_t;
 
 
@@ -72,10 +74,25 @@ typedef union event_u {
 } event_t;
 
 
+typedef int(*event_callback_t)(event_t*);
+
+
 /**
  * @brief Initializes the event subsystem.
  */
 void event_init (void);
+
+
+/**
+ * @brief Sets a callback on a certain event.
+ *
+ * The callback function takes the event recieving as a parameter. It must
+ *  return 0 to continue generating the event or 1 to destroy the event.
+ *
+ *    @param type Type of event to set callback on.
+ *    @param func Callback function.
+ */
+void event_setCallback( event_type_t type, event_callback_t func );
 
 
 /**
