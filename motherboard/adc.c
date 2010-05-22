@@ -37,6 +37,7 @@ void adc_init (void)
    ADCSRA = /*_BV(ADEN) |*/ /* Enable ADC. */
             _BV(ADIE) | /* Use interrupts. */
             _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); /* 128 prescaler. */
+   ADCSRB = 0; /* No autotrigger. */
 }
 
 
@@ -46,7 +47,10 @@ void adc_exit (void)
    ADCSRA = 0;
 
    /* Disable power. */
-   PRR |= _BV(PRADC);
+   PRR   |= _BV(PRADC);
+
+   /* Enable digital IO. */
+   DIDR0  = 0;
 }
 
 
