@@ -21,8 +21,9 @@ int dhb_init( int port );
  *
  *    @param port Port the module is on.
  *    @param mode Mode to set.
+ *    @return 0 on success.
  */
-void dhb_mode( int port, char mode );
+int dhb_mode( int port, char mode );
 
 
 /**
@@ -35,8 +36,9 @@ void dhb_mode( int port, char mode );
  *    @param port Port the dhb board is on.
  *    @param t0 Target for motor 0.
  *    @param t1 Target for motor 1.
+ *    @return 0 on success.
  */
-void dhb_target( int port, int16_t t0, int16_t t1 );
+int dhb_target( int port, int16_t t0, int16_t t1 );
 
 
 /**
@@ -44,8 +46,9 @@ void dhb_target( int port, int16_t t0, int16_t t1 );
  *
  *    @param[out] m0 Same units as the target for motor 0 feedback.
  *    @param[out] m1 Same units as the target for motor 1 feedback.
+ *    @return 0 on success.
  */
-void dhb_feedback( uint16_t *m0, uint16_t *m1 );
+int dhb_feedback( uint16_t *m0, uint16_t *m1 );
 
 
 #endif /* _MOD_HBRIDGE_H */

@@ -63,7 +63,7 @@ ISR(MOD_ON_SIG)
       }
       else {
          mod_data[1].id       = MODULE_ID_NONE;
-         mod_data[1].version  = 1;
+         mod_data[1].version  = 0;
       }
    }
 }
@@ -83,10 +83,10 @@ void mod_init (void)
    spim_init();
 
    /* Detect card 1. */
-   mod_data[0].on = MOD1_ON_PIN & _BV(MOD1_ON_P);
+   mod_data[0].on = !(MOD1_ON_PIN & _BV(MOD1_ON_P));
 
    /* Detect card 2. */
-   mod_data[1].on = MOD2_ON_PIN & _BV(MOD2_ON_P);
+   mod_data[1].on = !(MOD2_ON_PIN & _BV(MOD2_ON_P));
 }
 
 
@@ -109,13 +109,18 @@ int mod_detect( int port )
 {
    switch (port) {
       case 1:
-         return MOD1_ON_PIN & _BV(MOD1_ON_P);
+         return !(MOD1_ON_PIN & _BV(MOD1_ON_P));
       case 2:
-         return MOD2_ON_PIN & _BV(MOD2_ON_P);
+         return !(MOD2_ON_PIN & _BV(MOD2_ON_P));
       default:
          return 0;
    }
 }
 
+
+module_t* mod_get( int port )
+{
+   return &mod_data[port];
+}
 
 

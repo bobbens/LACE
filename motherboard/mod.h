@@ -4,6 +4,9 @@
 #  define _MOD_H
 
 
+#include "mod_list.h"
+
+
 /**
  * @brief Module definition.
  */
@@ -47,7 +50,7 @@ int mod_detect( int port );
  *    @param Number of module to get (starts with 1).
  *    @return Module gotten or NULL if none found.
  */
-module_t *mod_get( int mod );
+module_t *mod_get( int port );
 
 
 #endif /* _MOD_H */
