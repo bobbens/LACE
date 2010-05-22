@@ -81,22 +81,37 @@ ISR( SPI_STC_vect )
 }
 
 
-/**
- * @brief Transmits data.
- */
-void spim_transmit( int port, const char *data, int len )
+void spim_transmitStart (void)
 {
-   int i;
-
    /* Clear buffers. */
-   spi_outPos = 1;
-   spi_inPos  = 0;
-   spi_len    = len;
+   spi_outPos  = 1;
+   spi_inPos   = 0;
+   spi_len     = 0;
+}
 
-   /* Fill output buffer. */
-   for (i=1; i<len; i++)
-      spi_outBuf[i] = data[i];
 
+void spim_transmitChar( char ch )
+{
+   if (spi_len >= SPI_BUFFER_LEN)
+      return;
+   spi_outBuf[ spi_len++ ] = ch;
+}
+
+
+void spim_transmitString( const char *data, int len )
+{
+   int i, n;
+   n = len;
+   if (spi_len + n > SPI_BUFFER_LEN)
+      n = SPI_BUFFER_LEN - spi_len;
+   for (i=0; i<n; i++) {
+      spi_outBuf[ spi_len++ ] = data[i];
+   }
+}
+
+
+void spim_transmitEnd( int port )
+{
    /* Set the port. */
    spi_port = port;
    switch (spi_port) {
@@ -120,7 +135,18 @@ void spim_transmit( int port, const char *data, int len )
    SPCR |= _BV(SPE);
 
    /* Write first byte. */
-   SPDR  = data[0];
+   SPDR  = spi_outBuf[0];
+}
+
+
+/**
+ * @brief Transmits data.
+ */
+void spim_transmit( int port, const char *data, int len )
+{
+   spim_transmitStart();
+   spim_transmitString( data, len );
+   spim_transmitEnd( port );
 }
 
 

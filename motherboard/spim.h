@@ -11,6 +11,37 @@ void spim_init (void);
 
 
 /**
+ * @brief Starts a transmission.
+ */
+void spim_transmitStart (void);
+
+
+/**
+ * @brief Adds a char to the output buffer.
+ *
+ *    @param ch Char to add.
+ */
+void spim_transmitChar( char ch );
+
+
+/**
+ * @brief Adds a string to the output buffer.
+ *
+ *    @param data Data to add.
+ *    @param len Length of the data to add.
+ */
+void spim_transmitString( const char *data, int len );
+
+
+/**
+ * @brief Starts the spi transmission on the port.
+ *
+ *    @param port Port to start transmitting data on.
+ */
+void spim_transmitEnd( int port );
+
+
+/**
  * @brief Begins a transmission.
  *
  *    @param data Data to transmit.
