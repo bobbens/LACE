@@ -16,6 +16,10 @@ static FILE mystdout = FDEV_SETUP_STREAM(uart_putc, NULL, _FDEV_SETUP_WRITE);
 
 void comm_init (void)
 {
+   /* Enable the uart0 peripheral. */
+   PRR   &= ~_BV(PRUSART0);
+
+   /* Start up the module. */
    uart_init( UART_BAUD_SELECT(COMM_BAUD,F_CPU) );
    stdout = &mystdout;
 }

@@ -30,8 +30,12 @@ static void init (void)
 {
    /* Disable some subsystems. */
    PRR = _BV(PRTWI) | /* Disable the TWI. */
+         _BV(PRTIM2) | /* Disable the Timer 2. */
          _BV(PRTIM0) | /* Disable the Timer 0. */
+         _BV(PRUSART1) | /* Disable the USART 1. */
+         _BV(PRTIM1) | /* Disable the Timer 1. */
          _BV(PRSPI) | /* Disable the SPI. */
+         _BV(PRUSART0) | /* Disable the USART 0. */
          _BV(PRADC); /* Disable ADC. */
 
    /* Initialize the LED. */
