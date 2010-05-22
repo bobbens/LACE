@@ -110,7 +110,7 @@ int mod_detect( int port )
    switch (port) {
       case 1:
          return MOD1_ON_PIN & _BV(MOD1_ON_P);
-      case 0:
+      case 2:
          return MOD2_ON_PIN & _BV(MOD2_ON_P);
       default:
          return 0;
