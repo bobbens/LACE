@@ -17,6 +17,15 @@ int dhb_init( int port );
 
 
 /**
+ * @brief Sets the motor controller mode.
+ *
+ *    @param port Port the module is on.
+ *    @param mode Mode to set.
+ */
+void dhb_mode( int port, char mode );
+
+
+/**
  * @brief Sets the targets of each motor, these are dependent on the operating mode.
  *
  * >0 is forward

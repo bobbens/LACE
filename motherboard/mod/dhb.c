@@ -10,6 +10,12 @@
 #include <util/crc16.h>
 
 
+/*
+ * Prototypes.
+ */
+static void dhb_send( int port, char cmd, char *data, int len );
+
+
 int dhb_init( int port )
 {
    /* Make sure it's detected. */
@@ -24,26 +30,44 @@ int dhb_init( int port )
 }
 
 
-void dhb_target( int port, int16_t t0, int16_t t1 )
+static void dhb_send( int port, char cmd, char *data, int len )
 {
    int i;
-   char buf[7];
+   char crc;
 
-   /* Header. */
-   buf[0]   = 0x80;
-   buf[1]   = HB_CMD_MOTORSET;
-   /* Data. */
-   buf[2]   = t0>>8;
-   buf[3]   = t0;
-   buf[4]   = t1>>8;
-   buf[5]   = t1;
-   /* CRC. */
-   buf[6]   = 0;
-   for (i=1; i<6; i++)
-      buf[6] = _crc_ibutton_update( buf[6], buf[i] );
+   /* Calculate CRC. */
+   crc = _crc_ibutton_update( 0, cmd );
+   for (i=0; i<len; i++)
+      crc = _crc_ibutton_update( crc, data[i] );
 
    /* Send data. */
-   spim_transmit( port, buf, sizeof(buf) );
+   spim_transmitStart();
+   spim_transmitChar( 0x80 ); /* Header. */
+   spim_transmitChar( cmd ); /* Command. */
+   spim_transmitString( data, len ); /* Data. */
+   spim_transmitChar( crc ); /* CRC. */
+   spim_transmitEnd( port );
+}
+
+
+void dhb_mode( int port, char mode )
+{
+   dhb_send( port, HB_CMD_MODESET, &mode, sizeof(mode) );
+}
+
+
+void dhb_target( int port, int16_t t0, int16_t t1 )
+{
+   char data[4];
+
+   /* Data. */
+   data[0]  = t0>>8;
+   data[1]  = t0;
+   data[2]  = t1>>8;
+   data[3]  = t1;
+
+   /* Send the data. */
+   dhb_send( port, HB_CMD_MOTORSET, data, sizeof(data) );
 }
 
 
