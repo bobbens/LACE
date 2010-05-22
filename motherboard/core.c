@@ -29,7 +29,9 @@
 static void init (void)
 {
    /* Disable some subsystems. */
-   PRR = _BV(PRTWI); /* Disable the TWI. */
+   PRR = _BV(PRTWI) | /* Disable the TWI. */
+         _BV(PRTIM0) | /* Disable the Timer 0. */
+         0;
 
    /* Initialize the LED. */
    LED0_INIT();
@@ -51,12 +53,6 @@ static void init (void)
 
    /* Set sleep mode. */
    set_sleep_mode( SLEEP_MODE_IDLE );
-
-   /* Set up watchdog timer. */
-#if 0
-   wdt_reset(); /* Just in case. */
-   wdt_enable( WDTO_15MS );
-#endif
 
    /* Enable interrupts. */
    sei();

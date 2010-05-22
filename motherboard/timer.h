@@ -26,6 +26,12 @@ void timer_init (void);
 
 
 /**
+ * @brief Closes the timer infrastructure.
+ */
+void timer_exit (void);
+
+
+/**
  * @brief Starts a timer.
  *
  *    @param timer Timer to start.

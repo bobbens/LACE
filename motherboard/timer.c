@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 
 #include "uart.h"
 #include "event.h"
@@ -27,6 +28,9 @@ ISR( TIMER0_COMPA_vect )
 {
    int i;
    event_t evt;
+
+   /* Reset watchdog. */
+   wdt_reset();
 
    for (i=0; i<MAX_TIMERS; i++) {
       /* Only interested in active timers. */
@@ -54,6 +58,11 @@ void timer_init (void)
 {
    int i;
 
+   /* Enable timer. */
+   TIFR0  = _BV(OCF0A) | _BV(OCF0B) | _BV(TOV0); /* Clear interrupt flags. */
+   TIMSK0 = 0;
+   PRR   &= ~_BV(PRTIM0);
+
    /* Clear timers. */
    for (i=0; i<MAX_TIMERS; i++)
       timers[i].left = 0;
@@ -80,8 +89,25 @@ void timer_init (void)
     */
    TCCR0A = _BV(WGM01); /* CTC mode. */
    TCCR0B = _BV(CS02); /* 256 prescaler. */
-   TIMSK0 = _BV(OCIE0A); /* Enable interrupt. */
+   TCNT0  = 0; /* Clear timer. */
    OCR0A  = 76;
+   OCR0B  = 0;
+   TIMSK0 = _BV(OCIE0A); /* Enable interrupt. */
+
+
+   /* Set up watchdog timer. */
+   wdt_reset(); /* Just in case. */
+   wdt_enable( WDTO_250MS );
+}
+
+
+void timer_exit (void)
+{
+   PRR |= _BV(PRTIM0); /* Disable timer. */
+
+   /* Disable watchdog timer. */
+   wdt_reset(); /* Important according to datasheet. */
+   wdt_disable();
 }
 
 
