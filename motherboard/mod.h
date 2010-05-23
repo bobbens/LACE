@@ -39,6 +39,12 @@ void mod_on( int port );
 
 
 /**
+ * @brief Turns off a module.
+ */
+void mod_off( int port );
+
+
+/**
  * @brief Checks to see if there's a module in a port.
  */
 int mod_detect( int port );

@@ -5,7 +5,8 @@
 #include "dhb.h"
 
 #include "spim.h"
-#include "hbridge/hbridge.h"
+#include "dhb/hbridge.h"
+#include "mod_def.h"
 
 #include <util/crc16.h>
 
@@ -23,18 +24,38 @@ int dhb_init( int port )
    /* Make sure it's detected. */
    if (!mod_detect( port ))
       return -1;
+   
+   /* Check if empty. */
+   mod            = mod_get( port );
+   if (mod->id != MODULE_ID_NONE)
+      return -1;
 
    /* Turn port on. */
    mod_on( port );
 
    /* Set data. */
-   mod            = mod_get( port );
-   mod->id        = MOD_TYPE_DHB;
+   mod->id        = MODULE_ID_DHB;
    mod->version   = 1;
    mod->on        = 1;
 
    /* Send a packet and see if we recieve it. */
    return 0;
+}
+
+
+void dhb_exit( int port )
+{
+   module_t *mod;
+
+   /* Check if valid. */
+   mod = mod_get( port );
+   if (mod->id != MODULE_ID_DHB)
+      return;
+
+   mod->id        = MODULE_ID_NONE;
+   mod->version   = 0;
+   mod->on        = 0;
+   mod_off( port );
 }
 
 
@@ -46,7 +67,11 @@ static int dhb_send( int port, char cmd, char *data, int len )
 
    /* Check module. */
    mod = mod_get( port );
-   if (mod->id != MOD_TYPE_DHB)
+   if (mod->id != MODULE_ID_DHB)
+      return -1;
+
+   /* Check sending. */
+   if (!spim_idle())
       return -1;
 
    /* Calculate CRC. */

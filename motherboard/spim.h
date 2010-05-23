@@ -74,5 +74,23 @@ int spim_read( char *data, int max );
 int spim_idle (void);
 
 
+/**
+ * @brief Gets the incoming buffer.
+ *
+ *    @param[out] len Length of incoming buffer.
+ *    @return The incoming buffer.
+ */
+char* spim_inbuf( int *len );
+
+
+/**
+ * @brief Gets the outgoing buffer.
+ *
+ *    @param[out] len Length of outgoing buffer.
+ *    @return The outgoing buffer.
+ */
+char* spim_outbuf( int *len );
+
+
 #endif /* _SPIM_H */
 

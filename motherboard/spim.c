@@ -184,3 +184,16 @@ int spim_idle (void)
 }
 
 
+char* spim_inbuf( int *len )
+{
+   *len = sizeof( spi_inBuf );
+   return spi_inBuf;
+}
+
+
+char* spim_outbuf( int *len )
+{
+   *len = sizeof( spi_outBuf );
+   return spi_outBuf;
+}
+

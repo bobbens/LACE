@@ -105,6 +105,21 @@ void mod_on( int port )
 }
 
 
+void mod_off( int port )
+{
+   switch (port) {
+      case 1:
+         MOD1_RST_PORT &= ~_BV(MOD1_RST_P);
+         break;
+      case 2:
+         MOD2_RST_PORT &= ~_BV(MOD2_RST_P);
+         break;
+      default:
+         return;
+   }
+}
+
+
 int mod_detect( int port )
 {
    switch (port) {
