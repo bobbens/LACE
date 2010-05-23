@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include "dhb/hbridge.h"
+
 
 /**
  * @brief Attempts to detect and initialize the existance of the Dual H-Bridge module on a port.

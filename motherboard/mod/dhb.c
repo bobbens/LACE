@@ -5,10 +5,10 @@
 #include "dhb.h"
 
 #include "spim.h"
-#include "dhb/hbridge.h"
 #include "mod_def.h"
 
 #include <util/crc16.h>
+#include <stdio.h>
 
 
 /*
@@ -24,7 +24,7 @@ int dhb_init( int port )
    /* Make sure it's detected. */
    if (!mod_detect( port ))
       return -1;
-   
+
    /* Check if empty. */
    mod            = mod_get( port );
    if (mod->id != MODULE_ID_NONE)
@@ -38,7 +38,6 @@ int dhb_init( int port )
    mod->version   = 1;
    mod->on        = 1;
 
-   /* Send a packet and see if we recieve it. */
    return 0;
 }
 
@@ -93,7 +92,9 @@ static int dhb_send( int port, char cmd, char *data, int len )
 
 int dhb_mode( int port, char mode )
 {
-   return dhb_send( port, HB_CMD_MODESET, &mode, sizeof(mode) );
+   char data[1];
+   data[0] = mode;
+   return dhb_send( port, DHB_CMD_MODESET, data, sizeof(data) );
 }
 
 
@@ -108,7 +109,7 @@ int dhb_target( int port, int16_t t0, int16_t t1 )
    data[3]  = t1;
 
    /* Send the data. */
-   return dhb_send( port, HB_CMD_MOTORSET, data, sizeof(data) );
+   return dhb_send( port, DHB_CMD_MOTORSET, data, sizeof(data) );
 }
 
 
@@ -119,4 +120,5 @@ int dhb_feedback( uint16_t *m0, uint16_t *m1 )
 
    return 0;
 }
+
 
