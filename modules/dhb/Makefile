@@ -7,6 +7,7 @@ MCU                  := atmega168p
 PROGRAMMER_MCU       := m168p
 AVRDUDE_PROGRAMMERID := usbasp
 #AVRDUDE_PORT         := /dev/parport0
+#DEBUG						:= -DDEBUG
 
 
 #########################################
@@ -93,7 +94,7 @@ AVRDUDE_WRITE_FUSE := \
 #
 CC			:= avr-gcc
 OPTLEVEL := 2
-CFLAGS	:= \
+CFLAGS	:= $(DEBUG) \
 			-g 						\
 			-mmcu=$(MCU)			\
 			-O$(OPTLEVEL)			\
