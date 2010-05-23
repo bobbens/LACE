@@ -205,6 +205,7 @@ static void init (void)
    /* Power management. */
    PRR = _BV(PRTWI) | /* Disable TWI. */
          _BV(PRTIM2) | /* Disable Timer 2. */
+         _BV(PRUSART0) | /* Disable USART0. */
          _BV(PRADC); /* Disable ADC. */
 
    /* Sensors init. */
@@ -215,7 +216,9 @@ static void init (void)
 #endif
 
    /* Initialize communication. */
+#ifdef DEBUG
    comm_init();
+#endif /* DEBUG */
 
    /* Initialize the scheduler. */
    sched_init();
@@ -223,18 +226,18 @@ static void init (void)
    /* Enable interrupts. */
    sei();
 
-   printf( "Motor control board online...\n" );
+   dprintf( "DHB online... " );
    /* Check why we reset. */
    reset_source = MCUSR; 
    MCUSR = _BV(WDRF) | _BV(BORF) | _BV(EXTRF) | _BV(PORF); /* Clear flags. */
    if (reset_source & _BV(PORF))
-      printf("Power-on Reset\n"); 
+      dprintf("(PWR Rst)\n"); 
    else if (reset_source & _BV(EXTRF))
-      printf("External Reset\n");
+      dprintf("(EXT Rst)\n");
    else if (reset_source & _BV(BORF))
-      printf("Brownout Reset\n");
+      dprintf("(BDO Rst)\n");
    else if (reset_source & _BV(WDRF))
-      printf("Watchdog Reset\n");
+      dprintf("(WDT Rst)\n");
 }
 
 
