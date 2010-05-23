@@ -7,6 +7,7 @@
 
 #include "ioconf.h"
 #include "encoder.h"
+#include "hbridge.h"
 
 
 #define ABS(x) ((x)>0)?(x):-(x)
@@ -69,8 +70,14 @@ typedef volatile struct motor_s {
 /*
  * The motors.
  */
-static motor_t mot0;
-static motor_t mot1;
+static motor_t mot0; /**< Motor 0. */
+static motor_t mot1; /**< Motor 1. */
+
+
+/*
+ * Configuration.
+ */
+static int motor_curmode   = DHB_MODE_PWM; /**< Current operating mode. */
 
 
 /*
@@ -150,7 +157,7 @@ void motor_init (void)
  *   -|    |   z - 1   |  +|          +-----+   | t * s + 1 |   |
  *    |    +-----------+   |                    +-----------+   |
  *    |                    |                                    |
- *    |                 +------+                                | 
+ *    |                 +------+                                |
  *    |                 |  Kp  |                                |
  *    |                 +------+                     \ Ts       |
  *    |                    |             +-----+      \         |
@@ -216,6 +223,10 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
  */
 void motor_control (void)
 {
+   /* Only needed for feedback mode. */
+   if (motor_curmode != DHB_MODE_FBKS)
+      return;
+
    /* Control loop. */
    OCR0A = _motor_control( &mot0, &enc0 );
    OCR0B = _motor_control( &mot1, &enc1 );
@@ -227,6 +238,19 @@ void motor_control (void)
  */
 void motor_set( int16_t motor_0, int16_t motor_1 )
 {
+   uint8_t def_0, def_1;
+
+   switch (motor_curmode) {
+      case DHB_MODE_PWM:
+         def_0 = motor_0 & 0x00FF;
+         def_1 = motor_1 & 0x00FF;
+         break;
+
+      default:
+         def_0 = 0;
+         def_1 = 0;
+   }
+
    /* Motor 0. */
    mot0.target  = ABS(motor_0);
    if (motor_0 == 0) {
@@ -235,13 +259,13 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
    }
    else {
       if (motor_0 > 0) {
-         OCR0A  = 0;
+         OCR0A  = def_0;
          TCCR0A |= _BV(COM0A1); /* Non-inverting. */
          TCCR0A &= ~_BV(COM0A0);
          MOTOR0_PORT2 &= ~_BV(MOTOR0_IN2); /* Forward mode. */
       }
       else if (motor_0 < 0) {
-         OCR0A  = 0xFF;
+         OCR0A  = 0xFF - def_0;
          TCCR0A |= _BV(COM0A1) | _BV(COM0A0); /* Inverting. */
          MOTOR0_PORT2 |=  _BV(MOTOR0_IN2); /* Backwards mode. */
       }
@@ -254,13 +278,13 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
    }
    else {
       if (motor_1 > 0) {
-         OCR0B  = 0;
+         OCR0B  = def_1;
          TCCR0A |= _BV(COM0B1); /* Non-inverting. */
          TCCR0A &= ~_BV(COM0B0);
          MOTOR1_PORT2 &= ~_BV(MOTOR1_IN2); /* Forward mode. */
       }
       else if (motor_1 < 0) {
-         OCR0B  = 0xFF;
+         OCR0B  = 0xFF - def_1;
          TCCR0A |= _BV(COM0B1) | _BV(COM0B0); /* Inverting. */
          MOTOR1_PORT2 |=  _BV(MOTOR1_IN2); /* Backwards mode. */
       }
@@ -275,5 +299,11 @@ void motor_get( int16_t *motor_0, int16_t *motor_1 )
 {
    *motor_0 = enc0.last_tick;
    *motor_1 = enc1.last_tick;
+}
+
+
+void motor_mode( int mode )
+{
+   motor_curmode = mode;
 }
 
