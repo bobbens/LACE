@@ -3,6 +3,14 @@
 #ifndef COMM_H
 #  define COMM_H
 
+
+#ifdef DEBUG
+#  define dprintf( x, args... )      printf( x, ## args )
+#else /* DEBUG */
+#  define dprintf( x, args... )      do {} while(0)
+#endif /* DEBUG */
+
+
 /* Init */
 void comm_init (void);
 void USART0_Init( unsigned int baud );

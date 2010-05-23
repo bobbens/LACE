@@ -25,8 +25,11 @@ static FILE mystdout = FDEV_SETUP_STREAM( uart_putc, NULL,
  */
 void comm_init (void)
 {
+   /* Enable power. */
+   PRR &= ~_BV(PRUSART0);
+
    /* Set up USART. */
-   uart_init( UART_BAUD_SELECT( 9600, F_CPU ) );
+   uart_init( UART_BAUD_SELECT( 57600, F_CPU ) );
 
    /* Set up printf. */
    stdout = &mystdout;
