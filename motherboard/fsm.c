@@ -42,15 +42,15 @@ void fsm_start (void)
 static void fsm_init( event_t *evt )
 {
    switch (evt->type) {
+      case EVENT_TYPE_TIMER:
+         dhb_mode( 1, DHB_MODE_FBKS );
+         break;
+
       case EVENT_TYPE_SPI:
          fsm_state   = FSM_SEARCH;
          timer_start( 0, 500, NULL );
          timer_start( 1, 500, NULL );
          adc_start( fsm_adc );
-         break;
-
-      case EVENT_TYPE_TIMER:
-         dhb_mode( 1, DHB_MODE_FBKS );
          break;
 
       default:
