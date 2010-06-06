@@ -131,12 +131,6 @@ void i2cm_transmitString( const char *data, int len )
 }
 
 
-void i2cm_recieveLen( int len )
-{
-   i2c_len = len+1;
-}
-
-
 void i2cm_end (void)
 {
    /* Start transmission. */
@@ -161,7 +155,7 @@ void i2cm_transmit( uint8_t addr, const char *data, int len )
 void i2cm_recieve( uint8_t addr, int len )
 {
    i2cm_start( addr, I2C_READ );
-   i2cm_recieveLen( len );
+   i2c_len = len+1;
    i2cm_end();
 }
 

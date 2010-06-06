@@ -56,19 +56,31 @@
 
 
 /**
- * @brief Initializes the SPI as master.
+ * @brief Initializes the I2C as master.
+ *
+ * @usage i2cm_init( I2C_FREQ_400K );
+ *
+ *    @param freq Frequency macro to set at.
  */
 void i2cm_init( uint8_t freq );
 
 
 /**
- * @brief Exits the SPI subsystem.
+ * @brief Exits the I2C subsystem.
  */
 void i2cm_exit (void);
 
 
 /**
  * @brief Starts a transmission.
+ *
+ * You have to set the data to send with i2cm_transmitChar and
+ *  i2cm_transmitString. To actually begin sending you have to finalize with
+ *  i2cm_end.
+ *
+ *    @param addr Address to write to.
+ *    @param rw Should be either I2C_WRITE or I2C_READ depeding on whether it
+ *              should be a read or a write.
  */
 void i2cm_start( uint8_t addr, int rw );
 
@@ -90,13 +102,8 @@ void i2cm_transmitChar( char ch );
 void i2cm_transmitString( const char *data, int len );
 
 
-void i2cm_recieveLen( int len );
-
-
 /**
- * @brief Starts the spi transmission on the port.
- *
- *    @param port Port to start transmitting data on.
+ * @brief Starts the i2c communication.
  */
 void i2cm_end (void);
 
@@ -104,12 +111,19 @@ void i2cm_end (void);
 /**
  * @brief Begins a transmission.
  *
+ *    @param addr Address to send data to.
  *    @param data Data to transmit.
  *    @param len Length of the data to transmit.
  */
 void i2cm_transmit( uint8_t addr, const char *data, int len );
 
 
+/**
+ * @brief Begins a reception.
+ *
+ *    @param addr Address to get data from.
+ *    @param len Maximum data length to get (slave can make shorter).
+ */
 void i2cm_recieve( uint8_t addr, int len );
 
 
@@ -124,29 +138,11 @@ int i2cm_read( char *data, int max );
 
 
 /**
- * @brief Checks to see if the SPI module is idle.
+ * @brief Checks to see if the I2C module is idle.
  *
  *    @return 1 if idle.
  */
 int i2cm_idle (void);
-
-
-/**
- * @brief Gets the incoming buffer.
- *
- *    @param[out] len Length of incoming buffer.
- *    @return The incoming buffer.
- */
-char* i2cm_inbuf( int *len );
-
-
-/**
- * @brief Gets the outgoing buffer.
- *
- *    @param[out] len Length of outgoing buffer.
- *    @return The outgoing buffer.
- */
-char* i2cm_outbuf( int *len );
 
 
 #endif /* _SPIM_H */
