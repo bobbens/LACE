@@ -14,6 +14,8 @@ typedef enum event_type_e {
    EVENT_TYPE_NONE, /**< No valid event. */
    /* SPI Master. */
    EVENT_TYPE_SPI, /**< SPI subsystem event. */
+   /* I2C Master. */
+   EVENT_TYPE_I2C, /**< I2C subsystem event. */
    /* Module. */
    EVENT_TYPE_MODULE, /**< Module subsystem event. */
    /* ADC */
@@ -32,6 +34,16 @@ typedef struct event_spi_s {
    event_type_t type; /**< Type of the event. */
    int port; /**< SPI port generating event. */
 } event_spi_t;
+
+
+/**
+ * @brief I2C subsystem event.
+ */
+typedef struct event_i2c_s {
+   event_type_t type; /**< Type of the event. */
+   int address; /**< Address communicating with. */
+   int rw; /**< Whether reading or writing. */
+} event_i2c_t;
 
 
 /**
@@ -68,6 +80,7 @@ typedef struct event_timer_s {
 typedef union event_u {
    event_type_t type; /**< Type of the event. */
    event_spi_t spi; /**< SPI event. */
+   event_i2c_t i2c; /**< I2C event. */
    event_module_t module; /**< Module event. */
    event_adc_t adc; /**< ADC event. */
    event_timer_t timer; /**< Timer event. */
