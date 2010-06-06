@@ -97,6 +97,7 @@ typedef union event_u {
    event_module_t module; /**< Module event. */
    event_adc_t adc; /**< ADC event. */
    event_timer_t timer; /**< Timer event. */
+   event_custom_t custom; /**< Custom event. */
 } event_t;
 
 
