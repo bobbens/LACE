@@ -43,6 +43,7 @@ typedef struct event_i2c_s {
    event_type_t type; /**< Type of the event. */
    int address; /**< Address communicating with. */
    int rw; /**< Whether reading or writing. */
+   int ok; /**< WHether or not it was completed fully and successfully. */
 } event_i2c_t;
 
 

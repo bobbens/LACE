@@ -54,6 +54,7 @@ static volatile int  i2c_len     = 0; /**< Length of the buffer to write or read
 static volatile int  i2c_pos     = 0; /**< Position within the buffer. */
 static int  i2c_state            = I2C_STATE_NONE; /**< Current I2C stat. */
 static uint8_t i2c_twcr          = 0; /**< Temporary variable to store the TWCR before starting up. */
+static uint8_t i2c_ok            = 0; /**< Set to 1 if transmission was completed successfully. */
 
 
 /**
@@ -91,42 +92,12 @@ void i2cm_exit (void)
 }
 
 
-/**
- * @brief Signal handler indicating transfer complete.
- */
-ISR( TWI_vect )
-{
-#if 0
-   event_t evt;
-
-   /* Get last character. */
-   i2c_inBuf[ i2c_outPos-1 ] = SPDR;
-
-   /* Finished, so we break. */
-   if (i2c_outPos >= i2c_len) {
-      /* Unselect slaves. */
-      MOD1_SS_PORT |=  _BV(MOD1_SS_P);
-      MOD2_SS_PORT |=  _BV(MOD2_SS_P);
-      /* Disable SPI. */
-      SPCR         &= ~_BV(SPE);
-
-      /* End transmission event. */
-      evt.type      = EVENT_TYPE_SPI;
-      evt.spi.port  = i2c_port;
-      event_push( &evt );
-   }
-
-   /* Get ready for next write. */
-   SPDR = i2c_outBuf[ i2c_outPos++ ];
-#endif
-}
-
-
 void i2cm_start( uint8_t addr, int rw )
 {
    /* Clear buffers. */
    i2c_pos     = 0;
-   i2c_len     = 1;
+   i2c_len     = 1; /* Length is 1 because of the address+rw byte. */
+   i2c_ok      = 0;
    i2c_state   = I2C_STATE_NONE;
 
    /* Start communication. */
@@ -216,5 +187,82 @@ int i2cm_read( char *data, int max )
 int i2cm_idle (void)
 {
    return (!(TWCR & _BV(TWIE)));
+}
+
+
+/**
+ * @brief Signal handler indicating transfer complete.
+ */
+ISR( TWI_vect )
+{
+   event_t evt;
+
+   switch (TWSR) {
+
+      /* Writing. */
+      case I2C_START: /* START has been transmitted  */
+      case I2C_REP_START: /* Repeated START has been transmitted */
+         i2c_pos = 0; /* Write address + rw */
+         /* Purpose fallthrough. */
+      case I2C_MTX_ADR_ACK: /* SLA+W has been tramsmitted and ACK received */
+      case I2C_MTX_DATA_ACK: /* Data byte has been tramsmitted and ACK received */
+         if (i2c_pos < i2c_len) { /* Still have stuff to send. */
+            TWDR = i2c_buf[ i2c_pos++ ];                /* Send next byte. */
+            TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT); /* Keep running like before. */
+         }
+         else { /* Send STOP after last byte. */
+            i2c_ok = 1; /* It went OK. */
+            TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT) | /* Keep running like before. */
+                   _BV(TWSTO); /* Send STOP. */
+         }
+         break;
+
+      /* Reading. */
+      case I2C_MRX_DATA_ACK: /* Data byte has been received and ACK tramsmitted */
+         i2c_buf[ i2c_pos++ ] = TWDR;  /* Store new byte. */
+         /* Purpose fallthrough. */
+      case I2C_MRX_ADR_ACK: /* SLA+R has been tramsmitted and ACK received */
+         if (i2c_pos < i2c_len-1) { /* Read normally until last byte to NAK. */
+            TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT) | /* Keep running like before. */
+                   _BV(TWEA); /* ACK the byte. */
+         }
+         else { /* Send NAK after recieving. */
+            TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT); /* Keep running like before. */
+         }
+         break;
+
+      /* Finish read. */
+      case I2C_MRX_DATA_NACK: /* Data byte has been received and NACK tramsmitted */
+         i2c_ok = 1; /* It went OK. */
+         i2c_buf[ i2c_pos ] = TWDR; /* Store last byte. */
+         TWCR = _BV(TWEN) | /* Keep i2c enabled. */
+                _BV(TWINT) | /* Clear interrupt. */
+                _BV(TWSTO); /* Send STOP. */
+         break;
+
+      /* Arbitration. */
+      case I2C_ARB_LOST: /* Arbitration lost */
+         TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT) | /* Keep running like before. */
+                _BV(TWSTA); /* Send (RE)START condition. */
+         break;
+
+      /* Errors. */
+      case I2C_MTX_ADR_NACK: /* SLA+W has been tramsmitted and NACK received */
+      case I2C_MRX_ADR_NACK: /* SLA+R has been tramsmitted and NACK received */
+      case I2C_MTX_DATA_NACK: /* Data byte has been tramsmitted and NACK received */
+      case I2C_STATE_NONE: /* No relevant state information available. */
+      case I2C_BUS_ERROR: /* Bus error due to an illegal START or STOP condition */
+      default:
+         i2c_state = TWSR; /* Store state. */
+         TWCR = _BV(TWEN); /* Keep i2c enabled. */
+
+         /* Send end of transmission event. */
+         evt.type      = EVENT_TYPE_I2C;
+         evt.i2c.address = i2c_buf[0] >> 1;
+         evt.i2c.rw    = i2c_buf[0] & 0x01;
+         evt.i2c.ok    = i2c_ok;
+         event_push( &evt );
+         break;
+   }
 }
 
