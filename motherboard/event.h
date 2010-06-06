@@ -22,6 +22,8 @@ typedef enum event_type_e {
    EVENT_TYPE_ADC, /**< ADC event. */
    /* Timer. */
    EVENT_TYPE_TIMER, /**< Timer event. */
+   /* Custom. */
+   EVENT_TYPE_CUSTOm, /**< Custom event. */
    /* Sentinal for maximum. */
    EVENT_TYPE_MAX /**< Maximum amount of events. */
 } event_type_t;
@@ -72,6 +74,15 @@ typedef struct event_timer_s {
    event_type_t type; /**< Type of the event. */
    int timer; /**< Timer generating the event. */
 } event_timer_t;
+
+
+/**
+ * @brief Custom event.
+ */
+typedef struct event_custom_s {
+   event_type_t type; /**< Typo of the event. */
+   int id; /**< Custom identifier for the event. */
+} event_custom_t;
 
 
 
