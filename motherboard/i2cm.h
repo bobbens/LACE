@@ -51,6 +51,10 @@
 #endif /* F_CPU */
 
 
+#define I2C_WRITE    0 /**< Do I2C write. */
+#define I2C_READ     1 /**< Do I2C read. */
+
+
 /**
  * @brief Initializes the SPI as master.
  */
@@ -66,7 +70,7 @@ void i2cm_exit (void);
 /**
  * @brief Starts a transmission.
  */
-void i2cm_transmitStart (void);
+void i2cm_start( uint8_t addr, int rw );
 
 
 /**
@@ -86,12 +90,15 @@ void i2cm_transmitChar( char ch );
 void i2cm_transmitString( const char *data, int len );
 
 
+void i2cm_recieveLen( int len );
+
+
 /**
  * @brief Starts the spi transmission on the port.
  *
  *    @param port Port to start transmitting data on.
  */
-void i2cm_transmitEnd( int port );
+void i2cm_end (void);
 
 
 /**
@@ -100,7 +107,10 @@ void i2cm_transmitEnd( int port );
  *    @param data Data to transmit.
  *    @param len Length of the data to transmit.
  */
-void i2cm_transmit( int port, const char *data, int len );
+void i2cm_transmit( uint8_t addr, const char *data, int len );
+
+
+void i2cm_recieve( uint8_t addr, int len );
 
 
 /**
