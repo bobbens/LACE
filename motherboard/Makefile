@@ -2,10 +2,11 @@
 #
 #		 CHIP DETAILS + AVRDUDE
 #
-MCU				:= atmega324p
-PROGRAMMER_MCU := m324p
+MCU				:= atmega644p
+PROGRAMMER_MCU := m644p
 AVRDUDE_PROGRAMMERID := usbasp
 AVRDUDE_PORT	:= /dev/parport0
+
 
 #########################################
 #
@@ -27,6 +28,81 @@ CFLAGS			:= -mmcu=$(MCU)			\
 						-I..					  \
 						-I../modules
 
+
+#########################################
+#
+#  		AVRDUDE
+#
+AVRDUDE_FLAGS := -p $(PROGRAMMER_MCU) -c $(AVRDUDE_PROGRAMMERID) -v
+ifdef AVRDUDE_PORT
+AVRDUDE_FLAGS += -P $(AVRDUDE_PORT)
+endif
+
+
+#########################################
+#
+#       FUSES
+#
+EFUSE := 0xFD
+#       7 6 5 4 3 2 1 0
+# efuse 1 1 1 1 1 1 0 1 = 0xFD
+#       | | | | | | | |
+#       | | | | | | | +-> BODLEVEL0 \
+#       | | | | | | |               |
+#       | | | | | | +---> BODLEVEL1 |-> BOD Enabled
+#       | | | | | |                 |   Min 2.5V  Typical 2.7V  Max 2.9V
+#       | | | | | +-----> BODLEVEL2 /
+#       | | | | |                
+#       +-+-+-+-+-------> Unused
+#
+HFUSE := 0xD9
+#       7 6 5 4 3 2 1 0
+# hfuse 1 1 0 1 1 0 0 1 = 0xD9
+#       | | | | | | | |
+#       | | | | | | | +-> BOOTRST --> Unprogrammed
+#       | | | | | | |
+#       | | | | | | +---> BOOTSZ0 --> Unprogrammed
+#       | | | | | |
+#       | | | | | +-----> BOOTSZ1 --> Unprogrammed
+#       | | | | |
+#       | | | | +-------> EESAVE ---> Unprogrammed
+#       | | | |
+#       | | | +---------> WDTON ----> Unprogrammed, not always on
+#       | | |
+#       | | +-----------> SPIEN ----> SPI enabled
+#       | |
+#       | +-------------> JTAGEN ---> JTAG disalbed
+#       |
+#       +---------------> OCDEN ----> OCD Disabled
+#
+LFUSE := 0xD7
+#       7 6 5 4 3 2 1 0
+# lfuse 1 1 0 1 0 1 1 1 = 0xD7
+#       | | | | | | | |
+#       | | | | | | | +-> CKSEL0 \
+#       | | | | | | |            |
+#       | | | | | | +---> CKSEL1 |
+#       | | | | | |              |--> External Crystal Oscillator at 8MHz<
+#       | | | | | +-----> CKSEL2 |
+#       | | | | |                |
+#       | | | | +-------> CKSEL3 /
+#       | | | |
+#       | | | +---------> SUT0  \
+#       | | |                   |---> Crystal Oscillator, BOD enabled
+#       | | +-----------> SUT1  /
+#       | |
+#       | +-------------> CKOUT ----> No clock output
+#       |
+#       +---------------> CKDIV8 ---> Don't divide by 8
+AVRDUDE_READ_FUSE := \
+	-U lfuse:r:-:i \
+	-U hfuse:r:-:i \
+	-U efuse:r:-:i \
+	-U lock:r:-:i 
+AVRDUDE_WRITE_FUSE := \
+	-U lfuse:w:$(LFUSE):m \
+	-U hfuse:w:$(HFUSE):m \
+	-U efuse:w:$(EFUSE):m
 
 
 #########################################
@@ -72,7 +148,7 @@ GDBINITFILE	 := gdbinit-$(PRG)
 #
 #		 MAKE FUNCTIONS
 #
-.PHONY: all hex elf writeflash verify install sim clean
+.PHONY: all hex elf writeflash verify install fuses-read fuses-write sim clean
 
 all: $(PRG).hex
 
@@ -107,6 +183,16 @@ verify:		hex
 
 
 install:	writeflash
+
+fuses-read:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) \
+			-n	\
+			$(AVRDUDE_READ_FUSE)
+
+fuses-write:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) \
+			-u \
+			$(AVRDUDE_WRITE_FUSE)
 
 sim:		hex
 	$(AVRSIM) --gdbserver --device $(MCU) --port $(PORT) &
