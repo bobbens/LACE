@@ -101,6 +101,9 @@ typedef union event_u {
 } event_t;
 
 
+/**
+ * @brief Callback event.
+ */
 typedef int(*event_callback_t)(event_t*);
 
 
