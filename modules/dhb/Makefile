@@ -95,7 +95,6 @@ AVRDUDE_WRITE_FUSE := \
 CC			:= avr-gcc
 OPTLEVEL := 2
 CFLAGS	:= $(DEBUG) \
-			-g 						\
 			-mmcu=$(MCU)			\
 			-O$(OPTLEVEL)			\
 			-fpack-struct			\
