@@ -6,6 +6,12 @@
 
 
 /*
+ * The version.
+ */
+#define DHB_VERSION      0x02 /**< Version. */
+
+
+/*
  * The commands.
  */
 #define DHB_CMD_NONE     0x00 /**< Invalid command. */

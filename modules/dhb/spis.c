@@ -93,7 +93,7 @@ ISR( SPI_STC_vect )
 
       switch (spis_cmd) {
          case DHB_CMD_VERSION:
-            SPDR     = 0x01;
+            SPDR     = DHB_VERSION;
             spis_cmd = DHB_CMD_NONE;
             spis_pos = 0;
             break;
