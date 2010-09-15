@@ -3,8 +3,8 @@
 #       CHIP DETAILS + AVRDUDE
 #
 AVRDUDE              := avrdude
-MCU                  := atmega168p
-PROGRAMMER_MCU       := m168p
+MCU                  := atmega328p
+PROGRAMMER_MCU       := m328p
 AVRDUDE_PROGRAMMERID := usbasp
 #AVRDUDE_PORT         := /dev/parport0
 #DEBUG						:= -DDEBUG
@@ -135,7 +135,7 @@ PROJECT  := lace_dhb
 
 PRG      := $(PROJECT)
 
-SRC      := adc.c comm.c uart.c spis.c core.c encoder.c motors.c
+SRC      := current.c comm.c uart.c spis.c core.c encoder.c motors.c
 ASRC     := 
 GCCLIB   :=
 OBJS     := $(SRC:.c=.o)

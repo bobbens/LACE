@@ -10,6 +10,7 @@
 #include "motors.h"
 #include "hbridge.h"
 #include "comm.h"
+#include "current.h"
 
 
 /*
@@ -109,10 +110,10 @@ ISR( SPI_STC_vect )
             else {
                /* Check CRC. */
                if (c != spis_crc) {
-                  dprintf("c1\n");
+                  spis_cmd = DHB_CMD_NONE;
+                  spis_pos = 0;
                   break;
                }
-               dprintf("m%d\n", spis_buf[0]);
                /* Set mode. */
                motor_mode( spis_buf[0] );
                /* Clear command. */
@@ -135,7 +136,8 @@ ISR( SPI_STC_vect )
             else {
                /* Check CRC. */
                if (c != spis_crc) {
-                  dprintf("c2\n");
+                  spis_cmd = DHB_CMD_NONE;
+                  spis_pos = 0;
                   break;
                }
                /* Prepare arguments. */
@@ -145,7 +147,55 @@ ISR( SPI_STC_vect )
                motb += spis_buf[3];
                /* Set motor. */
                motor_set( mota, motb );
-               dprintf("M\n");
+               /* Clear command. */
+               spis_cmd = DHB_CMD_NONE;
+               spis_pos = 0;
+            }
+            break;
+
+         case DHB_CMD_MOTORGET:
+            if (spis_pos == 0) {
+               motor_get( &mota, &motb );
+               spis_buf[0] = mota >> 8;
+               spis_buf[1] = mota & 0xFF;
+               spis_buf[2] = mota >> 8;
+               spis_buf[3] = mota & 0xFF;
+               spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
+               SPDR        = spis_buf[0];
+               spis_pos    = 1;
+            }
+            else if (spis_pos < 4) {
+               SPDR = spis_buf[ spis_pos ];
+               spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
+               spis_pos++;
+            }
+            else {
+               SPDR  = spis_crc;
+               /* Clear command. */
+               spis_cmd = DHB_CMD_NONE;
+               spis_pos = 0;
+            }
+            break;
+
+         case DHB_CMD_CURRENT:
+            if (spis_pos == 0) {
+               mota = current_get(0);
+               motb = current_get(1);
+               spis_buf[0] = mota >> 8;
+               spis_buf[1] = mota & 0xFF;
+               spis_buf[2] = mota >> 8;
+               spis_buf[3] = mota & 0xFF;
+               spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
+               SPDR        = spis_buf[0];
+               spis_pos    = 1;
+            }
+            else if (spis_pos < 4) {
+               SPDR = spis_buf[ spis_pos ];
+               spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
+               spis_pos++;
+            }
+            else {
+               SPDR  = spis_crc;
                /* Clear command. */
                spis_cmd = DHB_CMD_NONE;
                spis_pos = 0;

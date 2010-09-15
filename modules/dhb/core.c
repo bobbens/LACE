@@ -13,11 +13,11 @@
 #include "ioconf.h"
 #include "comm.h"
 #include "uart.h"
-#include "adc.h"
 #include "motors.h"
 #include "encoder.h"
 #include "spis.h"
 #include "sched.h"
+#include "current.h"
 
 
 /*
@@ -30,7 +30,9 @@
  *
  * Example
  *  10 Hz  = 20 kHz / 2000
+ *  33 Hz  = 20 kHz / 600
  *  100 Hz = 20 kHz / 200
+ *  333 Hz = 20 kHz / 60
  *  1 kHz  = 20 kHz / 20
  *  10 kHz = 20 kHz / 2
  */
@@ -177,6 +179,7 @@ static void sched_run( uint8_t flags )
    }
    if (flags & SCHED_MOTOR) {
       motor_control();
+      current_startSample();
    }
 }
 
@@ -202,18 +205,13 @@ static void init (void)
    motor_init();
    encoder_init();
 
+   /* ADC subsystem. */
+   current_init();
+
    /* Power management. */
    PRR = _BV(PRTWI) | /* Disable TWI. */
          _BV(PRTIM2) | /* Disable Timer 2. */
-         _BV(PRUSART0) | /* Disable USART0. */
-         _BV(PRADC); /* Disable ADC. */
-
-   /* Sensors init. */
-#if 0
-   adc_init();
-   DDRA &= ~_BV(PORTA4); /* All ADC are inputs. */
-   /*sensors_init();*/
-#endif
+         _BV(PRUSART0); /* Disable USART0. */
 
    /* Initialize communication. */
 #ifdef DEBUG
