@@ -46,11 +46,17 @@ int dhb_target( int port, int16_t t0, int16_t t1 );
 /**
  * @brief Gets the feedback of the motors, these are dependent on the operating mode.
  *
- *    @param[out] m0 Same units as the target for motor 0 feedback.
- *    @param[out] m1 Same units as the target for motor 1 feedback.
  *    @return 0 on success.
  */
-int dhb_feedback( uint16_t *m0, uint16_t *m1 );
+int dhb_feedback( int port );
+
+
+/**
+ * @brief Gets the feedback of the motors, these are dependent on the operating mode.
+ *
+ *    @return 0 on success.
+ */
+int dhb_current( int port );
 
 
 #endif /* _MOD_HBRIDGE_H */

@@ -6,6 +6,7 @@
 
 #include "spim.h"
 #include "mod_def.h"
+#include "event.h"
 
 #include <util/crc16.h>
 #include <stdio.h>
@@ -112,13 +113,43 @@ int dhb_target( int port, int16_t t0, int16_t t1 )
    return dhb_send( port, DHB_CMD_MOTORSET, data, sizeof(data) );
 }
 
-
-int dhb_feedback( uint16_t *m0, uint16_t *m1 )
+static int dhb_feedback_callback( event_t* evt )
 {
-   *m0 = 0;
-   *m1 = 0;
+   event_t new_evt;
+   new_evt.type         = EVENT_TYPE_CUSTOM;
+   new_evt.custom.id    = 1;
+   new_evt.custom.data  = evt->spi.port;
+   event_push( &new_evt );
+   event_setCallback( EVENT_TYPE_SPI, NULL ); /* Disable callback. */
+   return 1; /* Destroy event. */
+}
+int dhb_feedback( int port )
+{
+   char data[5] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
+   int ret = dhb_send( port, DHB_CMD_MOTORGET, data, sizeof(data) );
+   if (ret == 0)
+      event_setCallback( EVENT_TYPE_SPI, dhb_feedback_callback );
+   return ret;
+}
 
-   return 0;
+
+static int dhb_current_callback( event_t* evt )
+{
+   event_t new_evt;
+   new_evt.type         = EVENT_TYPE_CUSTOM;
+   new_evt.custom.id    = 2;
+   new_evt.custom.data  = evt->spi.port;
+   event_push( &new_evt );
+   event_setCallback( EVENT_TYPE_SPI, NULL ); /* Disable callback. */
+   return 1; /* Destroy event. */
+}
+int dhb_current( int port )
+{
+   char data[5] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
+   int ret = dhb_send( port, DHB_CMD_CURRENT, data, sizeof(data) );
+   if (ret == 0)
+      event_setCallback( EVENT_TYPE_SPI, dhb_current_callback );
+   return ret;
 }
 
 
