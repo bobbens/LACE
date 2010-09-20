@@ -54,6 +54,9 @@
  * @brief Motor control structure.
  */
 typedef volatile struct motor_s {
+   /* Last tick. */
+   int16_t feedback;
+
    /* Target. */
    uint16_t target; /**< Target velocity. */
 
@@ -188,7 +191,8 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
     *  ---------  = revolutions per second
     *      X
     */
-   feedback = 5000 / enc->last_tick;
+   feedback       = 5000 / enc->last_tick;
+   mot->feedback  = feedback;
 
    /* Calculate the error. */
    error    = mot->target - feedback;
@@ -297,8 +301,8 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
  */
 void motor_get( int16_t *motor_0, int16_t *motor_1 )
 {
-   *motor_0 = 5000 / enc0.last_tick;
-   *motor_1 = 5000 / enc1.last_tick;
+   *motor_0 = mot0.feedback;
+   *motor_1 = mot1.feedback;
 }
 
 
