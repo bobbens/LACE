@@ -50,9 +50,6 @@ ISR( ADC_vect )
    /* Save data. */
    current_buffer[current_channel] = (ADCH<<8) + ADCL;
    current_channel = 1 - current_channel;
-
-   /* Disable ADC. */
-   ADCSRA &= ~_BV(ADEN);
 }
 
 
@@ -66,9 +63,6 @@ void current_startSample (void)
       ADMUX = (ADMUX & 0xF0) | 6;
    else
       ADMUX = (ADMUX & 0xF0) | 7;
-
-   /* Enable ADC. */
-   ADCSRA |= _BV(ADEN);
 
    /* Start conversion */
    ADCSRA |= _BV(ADSC);

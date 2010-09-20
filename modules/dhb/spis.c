@@ -58,10 +58,17 @@ void spis_init (void)
 
 /**
  * @brief SPI Serial Transfer complete.
+ *
+ *          1  2  3  4  5
+ *    0  1  2  3  4  5  6     n
+ * M 80 CM X1 X2 X3 X4 X5... CRC
+ * S 00 80 CM Y1 Y2 Y3 Y4... CRC
  */
 ISR( SPI_STC_vect )
 {
    int16_t mota, motb;
+   int16_t fbka, fbkb;
+   uint16_t cura, curb;
    char c = SPDR;
 
    /* Not processing a command currently. */
@@ -155,11 +162,11 @@ ISR( SPI_STC_vect )
 
          case DHB_CMD_MOTORGET:
             if (spis_pos == 0) {
-               motor_get( &mota, &motb );
-               spis_buf[0] = mota >> 8;
-               spis_buf[1] = mota & 0xFF;
-               spis_buf[2] = mota >> 8;
-               spis_buf[3] = mota & 0xFF;
+               motor_get( &fbka, &fbkb );
+               spis_buf[0] = (uint8_t)(fbka >> 8);
+               spis_buf[1] = (uint8_t)(fbka & 0xFF);
+               spis_buf[2] = (uint8_t)(fbkb >> 8);
+               spis_buf[3] = (uint8_t)(fbkb & 0xFF);
                spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
                SPDR        = spis_buf[0];
                spis_pos    = 1;
@@ -179,12 +186,12 @@ ISR( SPI_STC_vect )
 
          case DHB_CMD_CURRENT:
             if (spis_pos == 0) {
-               mota = current_get(0);
-               motb = current_get(1);
-               spis_buf[0] = mota >> 8;
-               spis_buf[1] = mota & 0xFF;
-               spis_buf[2] = mota >> 8;
-               spis_buf[3] = mota & 0xFF;
+               cura = current_get(0);
+               curb = current_get(1);
+               spis_buf[0] = (uint8_t)(cura >> 8);
+               spis_buf[1] = (uint8_t)(cura & 0xFF);
+               spis_buf[2] = (uint8_t)(curb >> 8);
+               spis_buf[3] = (uint8_t)(curb & 0xFF);
                spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
                SPDR        = spis_buf[0];
                spis_pos    = 1;

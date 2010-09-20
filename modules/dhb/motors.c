@@ -297,8 +297,8 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
  */
 void motor_get( int16_t *motor_0, int16_t *motor_1 )
 {
-   *motor_0 = enc0.last_tick;
-   *motor_1 = enc1.last_tick;
+   *motor_0 = 5000 / enc0.last_tick;
+   *motor_1 = 5000 / enc1.last_tick;
 }
 
 
@@ -306,4 +306,6 @@ void motor_mode( int mode )
 {
    motor_curmode = mode;
 }
+
+
 
