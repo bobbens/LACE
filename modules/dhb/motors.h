@@ -13,7 +13,7 @@ void motor_init (void);
 void motor_control (void);
 void motor_mode( int mode );
 void motor_set( int16_t motor_0, int16_t motor_1 );
-void motor_get( int16_t *motor_0, int16_t *motor_1 );
+void motor_get( uint8_t *out );
 
 
 #endif /* _MOTORS_H */

@@ -299,10 +299,12 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
 /**
  * @brief Gets the motor velocity.
  */
-void motor_get( int16_t *motor_0, int16_t *motor_1 )
+void motor_get( uint8_t *out )
 {
-   *motor_0 = mot0.feedback;
-   *motor_1 = mot1.feedback;
+   out[0] = (uint8_t) mot0.feedback>>8;
+   out[1] = (uint8_t) mot0.feedback;
+   out[2] = (uint8_t) mot1.feedback>>8;
+   out[3] = (uint8_t) mot1.feedback;
 }
 
 

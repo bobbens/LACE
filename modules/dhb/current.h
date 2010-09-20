@@ -8,7 +8,7 @@
 
 
 void current_init (void);
-uint16_t current_get( int channel );
+void current_get( uint8_t *out );
 void current_startSample (void);
 
 

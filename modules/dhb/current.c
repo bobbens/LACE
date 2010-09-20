@@ -8,7 +8,7 @@
 
 
 static uint16_t current_channel = 0;
-static uint16_t current_buffer[2];
+static uint8_t current_buffer[4];
 
 
 /**
@@ -36,9 +36,12 @@ void current_init (void)
 /**
  * @brief Gets the current data buffer of the current level.
  */
-uint16_t current_get( int channel )
+void current_get( uint8_t *out )
 {
-   return current_buffer[channel];
+   out[0] = current_buffer[0];
+   out[1] = current_buffer[1];
+   out[2] = current_buffer[2];
+   out[3] = current_buffer[3];
 }
 
 
@@ -48,7 +51,8 @@ uint16_t current_get( int channel )
 ISR( ADC_vect )
 {
    /* Save data. */
-   current_buffer[current_channel] = (ADCH<<8) + ADCL;
+   current_buffer[current_channel*2+0] = ADCH;
+   current_buffer[current_channel*2+1] = ADCL;
    current_channel = 1 - current_channel;
 }
 
