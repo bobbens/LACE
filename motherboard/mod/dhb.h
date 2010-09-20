@@ -49,6 +49,7 @@ int dhb_target( int port, int16_t t0, int16_t t1 );
  *    @return 0 on success.
  */
 int dhb_feedback( int port );
+void dhb_FeedbackValue( int port, int16_t *mota, int16_t *motb );
 
 
 /**
@@ -57,6 +58,7 @@ int dhb_feedback( int port );
  *    @return 0 on success.
  */
 int dhb_current( int port );
+void dhb_currentValue( int port, uint16_t *mota, uint16_t *motb );
 
 
 #endif /* _MOD_HBRIDGE_H */

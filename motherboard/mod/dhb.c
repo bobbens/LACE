@@ -5,12 +5,20 @@
 #include "dhb.h"
 
 #include "spim.h"
+#include "mod.h"
 #include "mod_def.h"
 #include "event.h"
 #include "event_cust.h"
 
 #include <util/crc16.h>
 #include <stdio.h>
+
+
+/*
+ * Internal usage variables.
+ */
+static uint16_t dhb_var_current[MOD_PORT_NUM][2]; /**< Current current value. */
+static int16_t dhb_var_feedback[MOD_PORT_NUM][2]; /**< Current speed value. */
 
 
 /*
@@ -116,7 +124,16 @@ int dhb_target( int port, int16_t t0, int16_t t1 )
 
 static int dhb_feedback_callback( event_t* evt )
 {
+   char *inbuf;
+   int len;
    event_t new_evt;
+
+   /* Store value. */
+   inbuf = spim_inbuf( &len );
+   dhb_var_feedback[evt->spi.port][0] = (inbuf[0]<<8) + inbuf[1];
+   dhb_var_feedback[evt->spi.port][1] = (inbuf[2]<<8) + inbuf[3];
+
+   /* Generate event. */
    new_evt.type         = EVENT_TYPE_CUSTOM;
    new_evt.custom.id    = EVENT_CUST_DHB_FEEDBACK;
    new_evt.custom.data  = evt->spi.port;
@@ -132,11 +149,25 @@ int dhb_feedback( int port )
       event_setCallback( EVENT_TYPE_SPI, dhb_feedback_callback );
    return ret;
 }
+void dhb_feedbackValue( int port, int16_t *mota, int16_t *motb )
+{
+   *mota = dhb_var_feedback[port][0];
+   *motb = dhb_var_feedback[port][1];
+}
 
 
 static int dhb_current_callback( event_t* evt )
 {
+   char *inbuf;
+   int len;
    event_t new_evt;
+
+   /* Store value. */
+   inbuf = spim_inbuf( &len );
+   dhb_var_current[evt->spi.port][0] = (inbuf[0]<<8) + inbuf[1];
+   dhb_var_current[evt->spi.port][1] = (inbuf[2]<<8) + inbuf[3];
+
+   /* Generate event. */
    new_evt.type         = EVENT_TYPE_CUSTOM;
    new_evt.custom.id    = EVENT_CUST_DHB_CURRENT;
    new_evt.custom.data  = evt->spi.port;
@@ -151,6 +182,11 @@ int dhb_current( int port )
    if (ret == 0)
       event_setCallback( EVENT_TYPE_SPI, dhb_current_callback );
    return ret;
+}
+void dhb_currentValue( int port, uint16_t *mota, uint16_t *motb )
+{
+   *mota = dhb_var_current[port][0];
+   *motb = dhb_var_current[port][1];
 }
 
 

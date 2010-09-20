@@ -7,6 +7,9 @@
 #include "mod_def.h"
 
 
+#define MOD_PORT_NUM    2
+
+
 /**
  * @brief Module definition.
  */
