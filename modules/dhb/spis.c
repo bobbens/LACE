@@ -126,6 +126,7 @@ ISR( SPI_STC_vect )
                /* Clear command. */
                spis_cmd = DHB_CMD_NONE;
                spis_pos = 0;
+               SPDR     = 0;
             }
             break;
 
@@ -157,6 +158,7 @@ ISR( SPI_STC_vect )
                /* Clear command. */
                spis_cmd = DHB_CMD_NONE;
                spis_pos = 0;
+               SPDR     = 0;
             }
             break;
 
@@ -172,12 +174,12 @@ ISR( SPI_STC_vect )
                spis_pos    = 1;
             }
             else if (spis_pos < 4) {
-               SPDR = spis_buf[ spis_pos ];
+               SPDR     = spis_buf[ spis_pos ];
                spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
                spis_pos++;
             }
             else {
-               SPDR  = spis_crc;
+               SPDR     = spis_crc;
                /* Clear command. */
                spis_cmd = DHB_CMD_NONE;
                spis_pos = 0;
@@ -197,12 +199,12 @@ ISR( SPI_STC_vect )
                spis_pos    = 1;
             }
             else if (spis_pos < 4) {
-               SPDR = spis_buf[ spis_pos ];
+               SPDR     = spis_buf[ spis_pos ];
                spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
                spis_pos++;
             }
             else {
-               SPDR  = spis_crc;
+               SPDR     = spis_crc;
                /* Clear command. */
                spis_cmd = DHB_CMD_NONE;
                spis_pos = 0;
