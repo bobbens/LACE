@@ -67,6 +67,14 @@ int spim_read( char *data, int max );
 
 
 /**
+ * @brief Reads a single character.
+ *
+ *    @return Character read (or 0x00 if nothing left).
+ */
+char spim_readChar (void);
+
+
+/**
  * @brief Checks to see if the SPI module is idle.
  *
  *    @return 1 if idle.

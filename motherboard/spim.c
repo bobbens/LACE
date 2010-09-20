@@ -64,6 +64,9 @@ void spim_exit (void)
 
 /**
  * @brief Signal handler indicating transfer complete.
+ *
+ * M 80 CM X1 X2 X3 X4 X5... CRC
+ * S 00 80 CM Y1 Y2 Y3 Y4... CRC
  */
 ISR( SPI_STC_vect )
 {
@@ -172,6 +175,15 @@ int spim_read( char *data, int max )
       data[ i++ ] = spi_inBuf[ spi_inPos++ ];
 
    return i;
+}
+
+
+/**
+ * @brief Reads a character.
+ */
+char spim_readChar (void)
+{
+   return spi_inBuf[ spi_inPos++ ];
 }
 
 

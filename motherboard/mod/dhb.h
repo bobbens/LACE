@@ -49,7 +49,7 @@ int dhb_target( int port, int16_t t0, int16_t t1 );
  *    @return 0 on success.
  */
 int dhb_feedback( int port );
-void dhb_FeedbackValue( int port, int16_t *mota, int16_t *motb );
+void dhb_feedbackValue( int port, int16_t *mota, int16_t *motb );
 
 
 /**

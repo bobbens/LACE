@@ -17,8 +17,8 @@
 /*
  * Internal usage variables.
  */
-static uint16_t dhb_var_current[MOD_PORT_NUM][2]; /**< Current current value. */
-static int16_t dhb_var_feedback[MOD_PORT_NUM][2]; /**< Current speed value. */
+static int16_t dhb_var_feedback[MOD_PORT_NUM*2]; /**< Current speed value. */
+static uint16_t dhb_var_current[MOD_PORT_NUM*2]; /**< Current current value. */
 
 
 /*
@@ -130,8 +130,8 @@ static int dhb_feedback_callback( event_t* evt )
 
    /* Store value. */
    inbuf = spim_inbuf( &len );
-   dhb_var_feedback[evt->spi.port][0] = (inbuf[0]<<8) + inbuf[1];
-   dhb_var_feedback[evt->spi.port][1] = (inbuf[2]<<8) + inbuf[3];
+   dhb_var_feedback[(evt->spi.port-1)*2+0] = (inbuf[3]<<8) + inbuf[4];
+   dhb_var_feedback[(evt->spi.port-1)*2+1] = (inbuf[5]<<8) + inbuf[6];
 
    /* Generate event. */
    new_evt.type         = EVENT_TYPE_CUSTOM;
@@ -143,7 +143,7 @@ static int dhb_feedback_callback( event_t* evt )
 }
 int dhb_feedback( int port )
 {
-   char data[5] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
+   char data[] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
    int ret = dhb_send( port, DHB_CMD_MOTORGET, data, sizeof(data) );
    if (ret == 0)
       event_setCallback( EVENT_TYPE_SPI, dhb_feedback_callback );
@@ -151,8 +151,8 @@ int dhb_feedback( int port )
 }
 void dhb_feedbackValue( int port, int16_t *mota, int16_t *motb )
 {
-   *mota = dhb_var_feedback[port][0];
-   *motb = dhb_var_feedback[port][1];
+   *mota = dhb_var_feedback[(port-1)*2+0];
+   *motb = dhb_var_feedback[(port-1)*2+1];
 }
 
 
@@ -164,8 +164,8 @@ static int dhb_current_callback( event_t* evt )
 
    /* Store value. */
    inbuf = spim_inbuf( &len );
-   dhb_var_current[evt->spi.port][0] = (inbuf[0]<<8) + inbuf[1];
-   dhb_var_current[evt->spi.port][1] = (inbuf[2]<<8) + inbuf[3];
+   dhb_var_current[(evt->spi.port-1)*2+0] = (inbuf[3]<<8) + inbuf[4];
+   dhb_var_current[(evt->spi.port-1)*2+1] = (inbuf[5]<<8) + inbuf[6];
 
    /* Generate event. */
    new_evt.type         = EVENT_TYPE_CUSTOM;
@@ -177,7 +177,7 @@ static int dhb_current_callback( event_t* evt )
 }
 int dhb_current( int port )
 {
-   char data[5] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
+   char data[] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
    int ret = dhb_send( port, DHB_CMD_CURRENT, data, sizeof(data) );
    if (ret == 0)
       event_setCallback( EVENT_TYPE_SPI, dhb_current_callback );
@@ -185,8 +185,8 @@ int dhb_current( int port )
 }
 void dhb_currentValue( int port, uint16_t *mota, uint16_t *motb )
 {
-   *mota = dhb_var_current[port][0];
-   *motb = dhb_var_current[port][1];
+   *mota = dhb_var_current[(port-1)*2+0];
+   *motb = dhb_var_current[(port-1)*2+1];
 }
 
 
