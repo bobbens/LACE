@@ -143,7 +143,7 @@ static int dhb_feedback_callback( event_t* evt )
 }
 int dhb_feedback( int port )
 {
-   char data[] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
+   char data[] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
    int ret = dhb_send( port, DHB_CMD_MOTORGET, data, sizeof(data) );
    if (ret == 0)
       event_setCallback( EVENT_TYPE_SPI, dhb_feedback_callback );
@@ -177,7 +177,7 @@ static int dhb_current_callback( event_t* evt )
 }
 int dhb_current( int port )
 {
-   char data[] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
+   char data[] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
    int ret = dhb_send( port, DHB_CMD_CURRENT, data, sizeof(data) );
    if (ret == 0)
       event_setCallback( EVENT_TYPE_SPI, dhb_current_callback );

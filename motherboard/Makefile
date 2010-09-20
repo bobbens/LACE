@@ -13,7 +13,7 @@ AVRDUDE_PORT	:= /dev/parport0
 #	COMPILING C
 #
 CC				 := avr-gcc
-OPTLEVEL		 := s
+OPTLEVEL		 := 3
 CFLAGS			:= -mmcu=$(MCU)			\
 						-O$(OPTLEVEL)			\
 						-fpack-struct			\

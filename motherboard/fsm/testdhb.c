@@ -9,6 +9,7 @@
 #include "timer.h"
 #include "mod/dhb.h"
 #include "event_cust.h"
+#include "spim.h"
 
 
 static int fsm_action = 0;
@@ -37,6 +38,13 @@ void fsm( event_t *evt )
                dhb_feedback( 1 );
             else
                dhb_current( 1 );
+            int n;
+            char *inbuf;
+            inbuf = spim_inbuf( &n );
+            printf( "%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+                  inbuf[0], inbuf[1], inbuf[2], inbuf[3],
+                  inbuf[4], inbuf[5], inbuf[6], inbuf[7],
+                  inbuf[8], inbuf[9], inbuf[10], inbuf[11]);
             fsm_action = 1 - fsm_action;
             LED0_TOGGLE();
          }
@@ -49,12 +57,12 @@ void fsm( event_t *evt )
       case EVENT_TYPE_CUSTOM:
          if (evt->custom.id == EVENT_CUST_DHB_FEEDBACK) {
             dhb_feedbackValue( 1, &fbka, &fbkb );
-            printf( "fbk %d %d\n", fbka, fbkb );
+            //printf( "fbk %d %d\n", fbka, fbkb );
             timer_start( 1, 100, NULL );
          }
          else if (evt->custom.id == EVENT_CUST_DHB_CURRENT) {
             dhb_currentValue( 1, &cura, &curb );
-            printf( "cur %u %u\n", cura, curb );
+            //printf( "cur %u %u\n", cura, curb );
             timer_start( 1, 100, NULL );
          }
          break;

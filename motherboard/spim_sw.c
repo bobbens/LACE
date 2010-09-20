@@ -11,6 +11,7 @@
 /*
  * Buffers.
  */
+static int spi_clk   = 0;
 static int spi_pos   = 0;
 static char spi_en   = 0;
 static char spi_spdr = 0x00;
@@ -52,13 +53,17 @@ void spim_init (void)
    TCCR2A = _BV(WGM21); /* CTC mode. */
    TCCR2B = _BV(CS21) | _BV(CS20); /* 8 prescaler. */
    TCNT2  = 0; /* Clear timer. */
-   OCR2A  = 76;
+   OCR2A  = 155;
    OCR2B  = 0;
    TIMSK2 &= ~_BV(OCIE2A); /* Disable interrupt. */
 
    /* Configure pins. */
    SPI_DDR &= ~_BV(SPI_MISO); /* MISO as input. */
    SPI_DDR |= _BV(SPI_MOSI) | _BV(SPI_SCK) | _BV(SPI_SS); /* MOSI and SCK as output. */
+
+   /* Defaults. */
+   SPI_PORT |= _BV(SPI_MOSI);
+   SPI_PORT &= ~_BV(SPI_SCK);
 
    /* Initialize slave SS pins. */
    MOD1_SS_DDR |= _BV(MOD1_SS_P);
@@ -92,18 +97,28 @@ ISR( TIMER2_COMPA_vect )
 {
    event_t evt;
 
+   /* Handle clock down. */
+   if (spi_clk) {
+      SPI_PORT &= ~_BV(SPI_SCK);
+      spi_clk = 0;
+   }
+
    /* Handle the bits. */
    if (spi_pos < 8) {
       /* Write bit. */
-      if (spi_spdr & 0x01)
+      if (spi_spdr & 0x80)
          SPI_PORT |= _BV(SPI_MOSI);
       else
          SPI_PORT &= ~_BV(SPI_MOSI);
 
       /* Read bit. */
-      spi_spdr >>= 1;
-      if (SPI_PORT & _BV(SPI_MISO))
-         spi_spdr |= 0x80;
+      spi_spdr <<= 1;
+      if (SPI_PIN & _BV(SPI_MISO))
+         spi_spdr |= 0x01;
+
+      /* Set clock up. */
+      SPI_PORT |= _BV(SPI_SCK);
+      spi_clk = 1;
 
       spi_pos++;
       return;
@@ -126,6 +141,7 @@ ISR( TIMER2_COMPA_vect )
 
       /* Disable SPI. */
       TIMSK2 &= ~_BV(OCIE2A); /* Disable interrupt. */
+      spi_en = 0;
    }
 
    /* Get ready for next write. */
@@ -191,6 +207,7 @@ void spim_transmitEnd( int port )
 
    /* Writing first bit. */
    spi_pos = 0;
+   spi_clk = 0;
 
    /* Start timer. */
    TCNT2  = 0; /* Clear timer. */

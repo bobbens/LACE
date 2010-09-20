@@ -1,8 +1,8 @@
 
 
 
-#include "spim_sw.c"
-//#include "spim_hw.c"
+//#include "spim_sw.c"
+#include "spim_hw.c"
 
 
 
