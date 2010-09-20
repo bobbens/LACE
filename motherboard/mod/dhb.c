@@ -7,6 +7,7 @@
 #include "spim.h"
 #include "mod_def.h"
 #include "event.h"
+#include "event_cust.h"
 
 #include <util/crc16.h>
 #include <stdio.h>
@@ -117,7 +118,7 @@ static int dhb_feedback_callback( event_t* evt )
 {
    event_t new_evt;
    new_evt.type         = EVENT_TYPE_CUSTOM;
-   new_evt.custom.id    = 1;
+   new_evt.custom.id    = EVENT_CUST_DHB_FEEDBACK;
    new_evt.custom.data  = evt->spi.port;
    event_push( &new_evt );
    event_setCallback( EVENT_TYPE_SPI, NULL ); /* Disable callback. */
@@ -137,7 +138,7 @@ static int dhb_current_callback( event_t* evt )
 {
    event_t new_evt;
    new_evt.type         = EVENT_TYPE_CUSTOM;
-   new_evt.custom.id    = 2;
+   new_evt.custom.id    = EVENT_CUST_DHB_CURRENT;
    new_evt.custom.data  = evt->spi.port;
    event_push( &new_evt );
    event_setCallback( EVENT_TYPE_SPI, NULL ); /* Disable callback. */
