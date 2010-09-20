@@ -16,7 +16,7 @@
  */
 
 
-#define MAX_TIMERS   3 /**< Maximum number of available timers. */
+#define MAX_TIMERS   4 /**< Maximum number of available timers. */
 
 
 /**
