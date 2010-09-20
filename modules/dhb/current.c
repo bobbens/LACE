@@ -7,8 +7,8 @@
 #include <avr/interrupt.h>
 
 
-uint16_t current_channel = 0;
-uint16_t current_buffer[2];
+static uint16_t current_channel = 0;
+static uint16_t current_buffer[2];
 
 
 /**
