@@ -36,10 +36,10 @@
  *  1 kHz  = 20 kHz / 20
  *  10 kHz = 20 kHz / 2
  */
-static volatile uint16_t sched_counter = 0; /**< Scheduler counter. */
-#define SCHED_MOTOR_DIVIDER         60  /**< Motor control divider. */
-#define SCHED_HEARTBEAT_DIVIDER     200 /**< Divider for heartbeat. */
-#define SCHED_MAX_DIVIDER           600 /**< Overflow amount for scheduler divider. */
+static unsigned int sched_mot_counter = 0; /**< Counter for the motor controller. */
+#define SCHED_MOTOR_TOP       60  /**< Motor control divider. */
+static unsigned int sched_heartbeat_counter = 0; /**< Counter for the heart beat. */
+#define SCHED_HEARTBEAT_TOP  200 /**< Divider for heartbeat. */
 /* Scheduler state flags. */
 volatile unsigned int sched_flags  = 0; /**< Scheduler flags. */
 
@@ -48,12 +48,12 @@ volatile unsigned int sched_flags  = 0; /**< Scheduler flags. */
  * Prototypes.
  */
 /* Scheduler. */
-static void sched_init (void);
-static void sched_run( uint8_t flags );
+static inline void sched_init (void);
+static inline void sched_run( uint8_t flags );
 /* Heartbeat. */
-static void heartbeat_init (void);
-static void heartbeat_set( uint16_t rate );
-static void heartbeat_update (void);
+static inline void heartbeat_init (void);
+static inline void heartbeat_set( uint16_t rate );
+static inline void heartbeat_update (void);
 
 
 /*
@@ -61,12 +61,12 @@ static void heartbeat_update (void);
  *    H E A R T B E A T
  *
  */
-static uint16_t heartbeat_counter = 0; /**< Heartbeat counter. */
-static uint16_t heartbeat_target  = 0; /**< Heartbeat target. */
+static unsigned int heartbeat_counter = 0; /**< Heartbeat counter. */
+static unsigned int heartbeat_target  = 0; /**< Heartbeat target. */
 /**
  * @brief Initializes the heartbeat.
  */
-static void heartbeat_init (void)
+static inline void heartbeat_init (void)
 {
    heartbeat_counter = 0;
    LED0_ON();
@@ -74,18 +74,18 @@ static void heartbeat_init (void)
    heartbeat_set( 50 );
 }
 /**
- * @brief Sets the heartbeat rate, should be in 1/100 seconds.
+ * @brief Sets the heartbeat rate, should be in 1/10 seconds.
  *
  *    @param rate Rate to set.
  */
-static void heartbeat_set( uint16_t rate )
+static inline void heartbeat_set( uint16_t rate )
 {
    heartbeat_target = rate;
 }
 /**
  * @brief Toggles the heartbeat if needed.
  */
-static void heartbeat_update (void)
+static inline void heartbeat_update (void)
 {
    heartbeat_counter++;
    if (heartbeat_counter >= heartbeat_target) {
@@ -124,16 +124,21 @@ ISR( TIMER1_OVF_vect )
       enc1.last_tick = enc1.cur_tick;
 
    /* Do some scheduler stuff here. */
-   if (!(sched_counter % SCHED_HEARTBEAT_DIVIDER))
-      sched_flags |= SCHED_HEARTBEAT;
-   if (!(sched_counter % SCHED_MOTOR_DIVIDER))
+   sched_mot_counter++;
+   if (sched_mot_counter >= SCHED_MOTOR_TOP) {
       sched_flags |= SCHED_MOTOR;
-   sched_counter = (sched_counter+1) % SCHED_MAX_DIVIDER;
+      sched_mot_counter = 0;
+   }
+   sched_heartbeat_counter++;
+   if (sched_heartbeat_counter >= SCHED_HEARTBEAT_TOP) {
+      sched_flags |= SCHED_HEARTBEAT;
+      sched_heartbeat_counter = 0;
+   }
 }
 /**
  * @brief Initializes the scheduler on Timer1.
  */
-static void sched_init (void)
+static inline void sched_init (void)
 {
    /* Phase and freq correct mode.
     *
@@ -166,7 +171,7 @@ static void sched_init (void)
  *
  *    @param flags Current scheduler flags to use.
  */
-static void sched_run( uint8_t flags )
+static inline void sched_run( uint8_t flags )
 {
    /*
     * Run tasks.
@@ -176,10 +181,10 @@ static void sched_run( uint8_t flags )
     */
    if (flags & SCHED_HEARTBEAT) {
       heartbeat_update();
+      current_startSample();
    }
    if (flags & SCHED_MOTOR) {
       motor_control();
-      current_startSample();
    }
 }
 
@@ -187,7 +192,7 @@ static void sched_run( uint8_t flags )
 /**
  * @brief Initializes all the subsystems.
  */
-static void init (void)
+static inline void init (void)
 {
    int reset_source;
 
@@ -319,7 +324,7 @@ int main (void)
       if (sched_flags != 0) {
 
          /* Atomic store temporary flags and reset real flags in case we run a bit late. */
-         flags = sched_flags;
+         flags       = sched_flags;
          sched_flags = 0;
          sei(); /* Restart interrupts. */
 
