@@ -11,7 +11,7 @@
 /*
  * Buffers.
  */
-static int spi_clk   = 0;
+static int spi_cycle = 0;
 static int spi_pos   = 0;
 static char spi_en   = 0;
 static char spi_spdr = 0x00;
@@ -92,60 +92,75 @@ void spim_exit (void)
  *
  * M 80 CM X1 X2 X3 X4 X5... CRC
  * S 00 80 CM Y1 Y2 Y3 Y4... CRC
+ *
+ *
+ * FRA      X   X   X   X
+ * CLK  ____--__--__--__--__
+ * SAM       X   X   X   X
+ * BYT      0000111122223333
+ * CYC      0123012301230123
  */
 ISR( TIMER2_COMPA_vect )
 {
    event_t evt;
 
-   /* Handle clock down. */
-   if (spi_clk) {
-      SPI_PORT &= ~_BV(SPI_SCK);
-      spi_clk = 0;
-   }
+   /* Increment cycle. */
+   spi_cycle = (spi_cycle+1)%4;
 
-   /* Handle the bits. */
-   if (spi_pos < 8) {
+   /* In this cycle stage. we basically write the byte. */
+   if (spi_cycle == 0) {
       /* Write bit. */
       if (spi_spdr & 0x80)
          SPI_PORT |= _BV(SPI_MOSI);
       else
          SPI_PORT &= ~_BV(SPI_MOSI);
 
-      /* Read bit. */
-      spi_spdr <<= 1;
-      if (SPI_PIN & _BV(SPI_MISO))
-         spi_spdr |= 0x01;
-
       /* Set clock up. */
       SPI_PORT |= _BV(SPI_SCK);
       spi_clk = 1;
 
       spi_pos++;
-      return;
    }
-   spi_pos = 0;
-
-   /* Get last character. */
-   spi_inBuf[ spi_outPos-1 ] = spi_spdr;
-
-   /* Finished, so we break. */
-   if (spi_outPos >= spi_len) {
-      /* Unselect slaves. */
-      MOD1_SS_PORT |=  _BV(MOD1_SS_P);
-      MOD2_SS_PORT |=  _BV(MOD2_SS_P);
-
-      /* End transmission event. */
-      evt.type      = EVENT_TYPE_SPI;
-      evt.spi.port  = spi_port;
-      event_push( &evt );
-
-      /* Disable SPI. */
-      TIMSK2 &= ~_BV(OCIE2A); /* Disable interrupt. */
-      spi_en = 0;
+   /* Sample. */
+   else if (spi_cycle == 1) {
+      /* Read bit. */
+      spi_spdr <<= 1;
+      if (SPI_PIN & _BV(SPI_MISO))
+         spi_spdr |= 0x01;
    }
+   /* Down phase. */
+   else if (spi_cycle == 2) {
+      SPI_PORT &= ~_BV(SPI_SCK);
+      spi_clk = 0;
+   }
+   /* Skip phase. */
+   else if (spi_cycle == 3) {
+      if (spi_pos >= 8) {
+         spi_pos = 0;
 
-   /* Get ready for next write. */
-   spi_spdr = spi_outBuf[ spi_outPos++ ];
+         /* Get last character. */
+         spi_inBuf[ spi_outPos-1 ] = spi_spdr;
+
+         /* Finished, so we break. */
+         if (spi_outPos >= spi_len) {
+            /* Unselect slaves. */
+            MOD1_SS_PORT |=  _BV(MOD1_SS_P);
+            MOD2_SS_PORT |=  _BV(MOD2_SS_P);
+
+            /* End transmission event. */
+            evt.type      = EVENT_TYPE_SPI;
+            evt.spi.port  = spi_port;
+            event_push( &evt );
+
+            /* Disable SPI. */
+            TIMSK2 &= ~_BV(OCIE2A); /* Disable interrupt. */
+            spi_en = 0;
+         }
+
+         /* Get ready for next write. */
+         spi_spdr = spi_outBuf[ spi_outPos++ ];
+      }
+   }
 }
 
 
