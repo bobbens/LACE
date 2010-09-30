@@ -105,6 +105,7 @@ CFLAGS	:= $(DEBUG) \
 			-Wall						\
 			-Wextra              \
 			-Wstrict-prototypes	\
+			--combine -fwhole-program \
 			-I.                  \
 			-I..
 
@@ -153,11 +154,8 @@ all: $(PRG).hex
 hex: $(PRG).hex
 elf: $(PRG).elf
 
-%.o:		%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(PRG).elf:	$(OBJS)
-	$(CC) $(CFLAGS) -o $(PRG).elf $(OBJS) $(GCCLIB)
+$(PRG).elf:
+	$(CC) $(CFLAGS) -o $(PRG).elf $(SRC) $(GCCLIB)
 
 $(PRG).hex:	$(PRG).elf
 	$(OBJCOPY) $(COPYOPTS) $< $@
