@@ -249,59 +249,6 @@ static inline void init (void)
  */
 int main (void)
 {
-#if 0
-   int i;
-   LED0_INIT();
-   LED1_INIT();
-   LED0_ON();
-   LED1_OFF();
-   MOTOR0_DDR1 |= _BV(MOTOR0_IN1);
-   MOTOR0_DDR2 |= _BV(MOTOR0_IN2);
-   MOTOR1_DDR1 |= _BV(MOTOR1_IN1);
-   MOTOR1_DDR2 |= _BV(MOTOR1_IN2);
-   TCCR0A = _BV(COM0A1) | _BV(COM0B1) |
-            _BV(WGM00) | _BV(WGM01); /* Fast PWM mode. */
-   TCCR0B = _BV(CS01); /* 8 prescaler. */
-   i        = 0;
-   OCR0A    = i;
-   OCR0B    = i;
-   while (1) {
-      _delay_ms(500.);
-      LED0_TOG();
-      LED1_TOG();
-      i       += 10;
-      OCR0A    = i;
-      OCR0B    = i;
-   }
-#endif
-#if 0
-   LED0_INIT();
-   LED1_INIT();
-   LED0_ON();
-   LED1_OFF();
-   /*uart_init( UART_BAUD_SELECT(9600, F_CPU ) );*/
-   /*rs232_init0( USART_4_8k );*/
-   comm_init();
-   sei();
-   while (1) {
-      printf("Hello World!\n");
-      _delay_ms(1000.);
-      LED0_TOG();
-      LED1_TOG();
-   }
-#endif
-#if 0
-   LED0_INIT();
-   LED1_INIT();
-   LED0_ON();
-   LED1_OFF();
-   spis_init();
-   sei();
-   while (1) {
-      _delay_ms( 500. );
-      LED0_TOG();
-   }
-#endif
    uint8_t flags;
 
    /* Disable watchdog timer since it doesn't always get reset on restart. */
@@ -322,7 +269,6 @@ int main (void)
       /* Atomic test to see if has anything to do. */
       cli();
       if (sched_flags != 0) {
-
          /* Atomic store temporary flags and reset real flags in case we run a bit late. */
          flags       = sched_flags;
          sched_flags = 0;
