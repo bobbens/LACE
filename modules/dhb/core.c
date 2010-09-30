@@ -36,12 +36,12 @@
  *  1 kHz  = 20 kHz / 20
  *  10 kHz = 20 kHz / 2
  */
-static unsigned int sched_mot_counter = 0; /**< Counter for the motor controller. */
+static uint8_t sched_mot_counter = 0; /**< Counter for the motor controller. */
 #define SCHED_MOTOR_TOP       60  /**< Motor control divider. */
-static unsigned int sched_heartbeat_counter = 0; /**< Counter for the heart beat. */
+static uint8_t sched_heartbeat_counter = 0; /**< Counter for the heart beat. */
 #define SCHED_HEARTBEAT_TOP  200 /**< Divider for heartbeat. */
 /* Scheduler state flags. */
-volatile unsigned int sched_flags  = 0; /**< Scheduler flags. */
+volatile uint8_t sched_flags  = 0; /**< Scheduler flags. */
 
 
 /*
@@ -61,8 +61,8 @@ static inline void heartbeat_update (void);
  *    H E A R T B E A T
  *
  */
-static unsigned int heartbeat_counter = 0; /**< Heartbeat counter. */
-static unsigned int heartbeat_target  = 0; /**< Heartbeat target. */
+static uint8_t heartbeat_counter = 0; /**< Heartbeat counter. */
+static uint8_t heartbeat_target  = 0; /**< Heartbeat target. */
 /**
  * @brief Initializes the heartbeat.
  */
