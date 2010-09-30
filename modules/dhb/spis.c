@@ -135,10 +135,10 @@ static void spis_cmd_modeset (void)
    if (spis_pos < 1) {
       /* Fill buffer. */
       spis_buf[ spis_pos++ ] = c;
-      /* Update CRC. */
-      spis_crc = _crc_ibutton_update( spis_crc, c );
       /* Echo recieved. */
       SPDR     = c;
+      /* Update CRC. */
+      spis_crc = _crc_ibutton_update( spis_crc, c );
    }
    else {
       /* Check CRC. */
@@ -162,10 +162,10 @@ static void spis_cmd_motorset (void)
    if (spis_pos < 4) {
       /* Fill buffer. */
       spis_buf[ spis_pos++ ] = c;
-      /* Update CRC. */
-      spis_crc = _crc_ibutton_update( spis_crc, c );
       /* Echo recieved. */
       SPDR     = c;
+      /* Update CRC. */
+      spis_crc = _crc_ibutton_update( spis_crc, c );
    }
    /* Handle command. */
    else {
