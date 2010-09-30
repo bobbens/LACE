@@ -154,7 +154,7 @@ all: $(PRG).hex
 hex: $(PRG).hex
 elf: $(PRG).elf
 
-$(PRG).elf:
+$(PRG).elf: $(SRC)
 	$(CC) $(CFLAGS) -o $(PRG).elf $(SRC) $(GCCLIB)
 
 $(PRG).hex:	$(PRG).elf
