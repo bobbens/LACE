@@ -32,7 +32,7 @@ static uint8_t spis_buf[5];
 /**
  * @brief Initialize the SPI interface.
  */
-void spis_init (void)
+inline void spis_init (void)
 {
    volatile char io_reg;
 
@@ -67,7 +67,7 @@ void spis_init (void)
 ISR( SPI_STC_vect )
 {
    int16_t mota, motb;
-   char c = SPDR;
+   char c = SPDR; /* Read soon just in case we get bit shifted. */
 
    /* Not processing a command currently. */
    if (spis_cmd == DHB_CMD_NONE) {
@@ -91,119 +91,133 @@ ISR( SPI_STC_vect )
 
       /* Echo. */
       SPDR = c;
+      return;
    }
 
    /* Handle data. */
-   else {
+   switch (spis_cmd) {
+      case DHB_CMD_VERSION:
+         SPDR     = DHB_VERSION;
+         spis_cmd = DHB_CMD_NONE;
+         spis_pos = 0;
+         break;
 
-      switch (spis_cmd) {
-         case DHB_CMD_VERSION:
-            SPDR     = DHB_VERSION;
+      case DHB_CMD_MODESET:
+         if (spis_pos < 1) {
+            /* Fill buffer. */
+            spis_buf[ spis_pos++ ] = c;
+            /* Update CRC. */
+            spis_crc = _crc_ibutton_update( spis_crc, c );
+            /* Echo recieved. */
+            SPDR     = c;
+         }
+         else {
+            /* Check CRC. */
+            if (c != spis_crc) {
+               spis_cmd = DHB_CMD_NONE;
+               spis_pos = 0;
+               break;
+            }
+            /* Set mode. */
+            motor_mode( spis_buf[0] );
+            /* Clear command. */
             spis_cmd = DHB_CMD_NONE;
             spis_pos = 0;
-            break;
+            SPDR     = 0;
+         }
+         break;
 
-         case DHB_CMD_MODESET:
-            if (spis_pos < 1) {
-               /* Fill buffer. */
-               spis_buf[ spis_pos++ ] = c;
-               /* Update CRC. */
-               spis_crc = _crc_ibutton_update( spis_crc, c );
-               /* Echo recieved. */
-               SPDR     = c;
-            }
-            else {
-               /* Check CRC. */
-               if (c != spis_crc) {
-                  spis_cmd = DHB_CMD_NONE;
-                  spis_pos = 0;
-                  break;
-               }
-               /* Set mode. */
-               motor_mode( spis_buf[0] );
-               /* Clear command. */
+      case DHB_CMD_MOTORSET:
+         /* Still processing input. */
+         if (spis_pos < 4) {
+            /* Fill buffer. */
+            spis_buf[ spis_pos++ ] = c;
+            /* Update CRC. */
+            spis_crc = _crc_ibutton_update( spis_crc, c );
+            /* Echo recieved. */
+            SPDR     = c;
+         }
+         /* Handle command. */
+         else {
+            /* Check CRC. */
+            if (c != spis_crc) {
                spis_cmd = DHB_CMD_NONE;
                spis_pos = 0;
-               SPDR     = 0;
+               break;
             }
-            break;
-
-         case DHB_CMD_MOTORSET:
-            /* Still processing input. */
-            if (spis_pos < 4) {
-               /* Fill buffer. */
-               spis_buf[ spis_pos++ ] = c;
-               /* Update CRC. */
-               spis_crc = _crc_ibutton_update( spis_crc, c );
-               /* Echo recieved. */
-               SPDR     = c;
-            }
-            /* Handle command. */
-            else {
-               /* Check CRC. */
-               if (c != spis_crc) {
-                  spis_cmd = DHB_CMD_NONE;
-                  spis_pos = 0;
-                  break;
-               }
-               /* Prepare arguments. */
-               mota  = (spis_buf[0]<<8) + spis_buf[1]; 
-               motb  = (spis_buf[2]<<8) + spis_buf[3];
-               /* Set motor. */
-               motor_set( mota, motb );
-               /* Clear command. */
-               spis_cmd = DHB_CMD_NONE;
-               spis_pos = 0;
-               SPDR     = 0;
-            }
-            break;
-
-         case DHB_CMD_MOTORGET:
-            if (spis_pos == 0) {
-               motor_get( spis_buf );
-               spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
-               SPDR        = spis_buf[0];
-               spis_pos    = 1;
-            }
-            else if (spis_pos < 4) {
-               SPDR     = spis_buf[ spis_pos ];
-               spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
-               spis_pos++;
-            }
-            else {
-               SPDR     = spis_crc;
-               /* Clear command. */
-               spis_cmd = DHB_CMD_NONE;
-               spis_pos = 0;
-            }
-            break;
-
-         case DHB_CMD_CURRENT:
-            if (spis_pos == 0) {
-               current_get( spis_buf );
-               spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
-               SPDR        = spis_buf[0];
-               spis_pos    = 1;
-            }
-            else if (spis_pos < 4) {
-               SPDR     = spis_buf[ spis_pos ];
-               spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
-               spis_pos++;
-            }
-            else {
-               SPDR     = spis_crc;
-               /* Clear command. */
-               spis_cmd = DHB_CMD_NONE;
-               spis_pos = 0;
-            }
-            break;
-
-         default:
-            SPDR     = 0x00;
+            /* Prepare arguments. */
+            mota  = (spis_buf[0]<<8) + spis_buf[1]; 
+            motb  = (spis_buf[2]<<8) + spis_buf[3];
+            /* Set motor. */
+            motor_set( mota, motb );
+            /* Clear command. */
             spis_cmd = DHB_CMD_NONE;
             spis_pos = 0;
-            break;
-      }
+            SPDR     = 0;
+         }
+         break;
+
+      case DHB_CMD_MOTORGET:
+         if (spis_pos == 0) {
+            /*
+            SPDR        = (uint8_t)(mot0.feedback>>8);
+            spis_buf[1] = (uint8_t)mot0.feedback;
+            spis_buf[2] = (uint8_t)(mot1.feedback>>8);
+            spis_buf[3] = (uint8_t)mot1.feedback;
+            */
+            SPDR        = 0x31;
+            spis_buf[1] = 0x32;
+            spis_buf[2] = 0x33;
+            spis_buf[3] = 0x34;
+            //spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
+            spis_pos    = 1;
+         }
+         else if (spis_pos < 4) {
+            SPDR     = spis_buf[ spis_pos ];
+            //spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
+            spis_pos++;
+         }
+         else {
+            SPDR     = spis_crc;
+            /* Clear command. */
+            spis_cmd = DHB_CMD_NONE;
+            spis_pos = 0;
+         }
+         break;
+
+      case DHB_CMD_CURRENT:
+         if (spis_pos == 0) {
+            /*
+            SPDR        = current_buffer[0];
+            spis_buf[1] = current_buffer[1];
+            spis_buf[2] = current_buffer[2];
+            spis_buf[3] = current_buffer[3];
+            */
+            SPDR        = 0x41;
+            spis_buf[1] = 0x42;
+            spis_buf[2] = 0x43;
+            spis_buf[3] = 0x44;
+            //spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
+            spis_pos    = 1;
+         }
+         else if (spis_pos < 4) {
+            SPDR     = spis_buf[ spis_pos ];
+            //spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
+            spis_pos++;
+         }
+         else {
+            SPDR     = 0x40;//;spis_crc;
+            /* Clear command. */
+            spis_cmd = DHB_CMD_NONE;
+            spis_pos = 0;
+         }
+         break;
+
+      default:
+         SPDR     = 0x00;
+         spis_cmd = DHB_CMD_NONE;
+         spis_pos = 0;
+         break;
    }
 }
 

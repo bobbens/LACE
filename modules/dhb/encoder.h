@@ -29,7 +29,7 @@ extern encoder_t enc1; /**< Encoder 1 counter. */
 /*
  * Initialization.
  */
-void encoder_init (void);
+inline void encoder_init (void);
 
 
 #endif /* ENCODERS_H */

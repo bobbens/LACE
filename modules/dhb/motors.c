@@ -50,31 +50,11 @@
    MOTOR1_PORT2 &= ~_BV(MOTOR1_IN2)
 
 
-/**
- * @brief Motor control structure.
- */
-typedef volatile struct motor_s {
-   /* Last tick. */
-   int16_t feedback;
-
-   /* Target. */
-   uint16_t target; /**< Target velocity. */
-
-   /* Internal usage variables. */
-   int16_t e_accum; /**< Accumulated error, for integral part. */
-
-   /* Controller parameters - these are divided by 16 (>>4). */
-   uint8_t kp; /**< Proportional part of the controller. */
-   uint8_t ki; /**< Integral part of the controller. */
-   int16_t windup; /**< Windup limit. */
-} motor_t;
-
-
 /*
  * The motors.
  */
-static motor_t mot0; /**< Motor 0. */
-static motor_t mot1; /**< Motor 1. */
+motor_t mot0; /**< Motor 0. */
+motor_t mot1; /**< Motor 1. */
 
 
 /*
@@ -86,8 +66,8 @@ static int motor_curmode   = DHB_MODE_PWM; /**< Current operating mode. */
 /*
  * Prototypes.
  */
-static void _motor_init( motor_t *mot );
-static uint8_t _motor_control( motor_t *mot, encoder_t *enc );
+static inline void _motor_init( motor_t *mot );
+static inline uint8_t _motor_control( motor_t *mot, encoder_t *enc );
 
 
 /**
@@ -95,7 +75,7 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc );
  *
  *    @param mot Motor to clear.
  */
-static void _motor_init( motor_t *mot )
+static inline void _motor_init( motor_t *mot )
 {
    /* Target to seek out. */
    mot->target  = 0;
@@ -114,7 +94,7 @@ static void _motor_init( motor_t *mot )
 /**
  * @brief Initializes the motors.
  */
-void motor_init (void)
+inline void motor_init (void)
 {
    /* Enable motor 0. */
    MOTOR0_DDR1 |= _BV(MOTOR0_IN1);
@@ -170,7 +150,7 @@ void motor_init (void)
  * @note Using 16 bit numbers for calculations using 8 bits for the significant
  *       numbers and 8 bits for the "decimals".
  */
-static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
+static inline uint8_t _motor_control( motor_t *mot, encoder_t *enc )
 {
    int16_t feedback, error, output;
    uint8_t pwm;
@@ -225,7 +205,7 @@ static uint8_t _motor_control( motor_t *mot, encoder_t *enc )
 /**
  * @brief Runs the control routine on both motors.
  */
-void motor_control (void)
+inline void motor_control (void)
 {
    /* Only needed for feedback mode. */
    if (motor_curmode != DHB_MODE_FBKS)
@@ -240,7 +220,7 @@ void motor_control (void)
 /**
  * @brief Sets the motor velocity.
  */
-void motor_set( int16_t motor_0, int16_t motor_1 )
+inline void motor_set( int16_t motor_0, int16_t motor_1 )
 {
    uint8_t def_0, def_1;
 
@@ -253,6 +233,7 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
       default:
          def_0 = 0;
          def_1 = 0;
+         /* Purpose fallthrough. */
    }
 
    /* Motor 0. */
@@ -297,18 +278,9 @@ void motor_set( int16_t motor_0, int16_t motor_1 )
 
 
 /**
- * @brief Gets the motor velocity.
+ * @brief Sets the motor mode.
  */
-void motor_get( uint8_t *out )
-{
-   out[0] = (uint8_t) mot0.feedback>>8;
-   out[1] = (uint8_t) mot0.feedback;
-   out[2] = (uint8_t) mot1.feedback>>8;
-   out[3] = (uint8_t) mot1.feedback;
-}
-
-
-void motor_mode( int mode )
+inline void motor_mode( int mode )
 {
    motor_curmode = mode;
 }

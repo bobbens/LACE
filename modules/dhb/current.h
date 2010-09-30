@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+extern int8_t current_buffer[4];
 
-void current_init (void);
-void current_get( uint8_t *out );
-void current_startSample (void);
+inline void current_init (void);
+inline void current_startSample (void);
 
 
 #endif /* CURRENT_H */

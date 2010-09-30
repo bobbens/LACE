@@ -8,20 +8,20 @@
 
 
 static uint16_t current_channel = 0;
-static uint8_t current_buffer[4];
+int8_t current_buffer[4];
 
 
 /**
  * @brief Initializes ADC subsystem.
  */
-void current_init (void)
+inline void current_init (void)
 {
    /* Enable power. */
    PRR &= ~_BV(PRADC);
 
 	/* Select reference voltage:
-    * AVCC with external capacitor at AREF pin */
-	ADMUX  = _BV(REFS0);
+    * ARef, if we choose AVCC, ARef will be shorted. */
+	ADMUX  = 0x00; /* _BV(REFS0); */
 
    /* We only need ADC6 and ADC7 which aren't IO. */
    DIDR0 = 0x00;
@@ -36,12 +36,18 @@ void current_init (void)
 /**
  * @brief Gets the current data buffer of the current level.
  */
-void current_get( uint8_t *out )
+inline void current_get( uint8_t *out )
 {
+   /*
    out[0] = current_buffer[0];
    out[1] = current_buffer[1];
    out[2] = current_buffer[2];
    out[3] = current_buffer[3];
+   */
+   out[0] = 0x41;
+   out[1] = 0x42;
+   out[2] = 0x43;
+   out[3] = 0x44;
 }
 
 
@@ -51,22 +57,29 @@ void current_get( uint8_t *out )
 ISR( ADC_vect )
 {
    /* Save data. */
-   current_buffer[current_channel*2+0] = ADCH;
-   current_buffer[current_channel*2+1] = ADCL;
-   current_channel = 1 - current_channel;
+   if (current_channel) {
+      current_buffer[2] = ADCH;
+      current_buffer[3] = ADCL;
+      current_channel   = 0;
+   }
+   else {
+      current_buffer[0] = ADCH;
+      current_buffer[1] = ADCL;
+      current_channel   = 0;
+   }
 }
 
 
 /**
  * @brief ADC single conversion routine.
  */
-void current_startSample (void)
+inline void current_startSample (void)
 {  
    /* Set ADC channel */
    if (current_channel == 0)
-      ADMUX = (ADMUX & 0xF0) | 6;
+      ADMUX = 0x06;
    else
-      ADMUX = (ADMUX & 0xF0) | 7;
+      ADMUX = 0x07;
 
    /* Start conversion */
    ADCSRA |= _BV(ADSC);

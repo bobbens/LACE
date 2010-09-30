@@ -17,7 +17,7 @@ encoder_t enc1; /**< Encoder 2. */
 /*
  * Prototypes.
  */
-static void _encoder_init( encoder_t *enc, uint8_t pinstate );
+static inline void _encoder_init( encoder_t *enc, uint8_t pinstate );
 
 
 /**
@@ -51,7 +51,7 @@ ISR( ENCODER_VECT )
  *    @param enc Encoder to initialize.
  *    @param pinstate Current pinstate.
  */
-static void _encoder_init( encoder_t *enc, uint8_t pinstate )
+static inline void _encoder_init( encoder_t *enc, uint8_t pinstate )
 {
    enc->cur_tick  = 0;
    enc->last_tick = UINT16_MAX; /* Consider stopped. */
@@ -63,7 +63,7 @@ static void _encoder_init( encoder_t *enc, uint8_t pinstate )
 /**
  * @brief Sets up the encoders.
  */
-void encoder_init (void)
+inline void encoder_init (void)
 {
    /* Set pins as input. */
    ENCODER_DDR &= ~(_BV(ENCODER_PORT0) | _BV(ENCODER_PORT1));
