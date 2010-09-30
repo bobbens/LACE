@@ -4,7 +4,6 @@
 
 #include <avr/interrupt.h>
 #include <util/crc16.h>
-#include <stdio.h>
 
 #include "ioconf.h"
 #include "motors.h"
@@ -30,8 +29,8 @@ spis_pos = 0
 
 
 static uint8_t spis_pos = 0;
-static uint8_t spis_crc = 0;
-static uint8_t spis_buf[5];
+uint8_t spis_crc = 0;
+uint8_t spis_buf[5];
 
 
 /*
@@ -101,10 +100,12 @@ static void spis_cmd_start (void)
             break;
 
          case DHB_CMD_MOTORGET:
+            sched_flags |= SCHED_SPIS_PREP_MOTORGET;
             spis_cmd_func = spis_cmd_motorget;
             break;
 
          case DHB_CMD_CURRENT:
+            sched_flags |= SCHED_SPIS_PREP_CURRENT;
             spis_cmd_func = spis_cmd_current;
             break;
 
@@ -186,27 +187,12 @@ static void spis_cmd_motorset (void)
 
 static void spis_cmd_motorget (void)
 {
-   if (spis_pos == 0) {
-      /*
-         SPDR        = (uint8_t)(mot0.feedback>>8);
-         spis_buf[1] = (uint8_t)mot0.feedback;
-         spis_buf[2] = (uint8_t)(mot1.feedback>>8);
-         spis_buf[3] = (uint8_t)mot1.feedback;
-       */
-      SPDR        = 0x31;
-      spis_buf[1] = 0x32;
-      spis_buf[2] = 0x33;
-      spis_buf[3] = 0x34;
-      //spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
-      spis_pos    = 1;
-   }
-   else if (spis_pos < 4) {
-      SPDR     = spis_buf[ spis_pos ];
-      //spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
+   if (spis_pos < 4) {
+      SPDR  = spis_buf[ spis_pos ];
       spis_pos++;
    }
    else {
-      SPDR     = spis_crc;
+      SPDR  = spis_crc;
       /* Clear command. */
       SPIS_CMD_RESET();
    }
@@ -215,27 +201,12 @@ static void spis_cmd_motorget (void)
 
 static void spis_cmd_current (void)
 {
-   if (spis_pos == 0) {
-      /*
-         SPDR        = current_buffer[0];
-         spis_buf[1] = current_buffer[1];
-         spis_buf[2] = current_buffer[2];
-         spis_buf[3] = current_buffer[3];
-       */
-      SPDR        = 0x41;
-      spis_buf[1] = 0x42;
-      spis_buf[2] = 0x43;
-      spis_buf[3] = 0x44;
-      //spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[0] );
-      spis_pos    = 1;
-   }
-   else if (spis_pos < 4) {
-      SPDR     = spis_buf[ spis_pos ];
-      //spis_crc = _crc_ibutton_update( spis_crc, spis_buf[ spis_pos ] );
+   if (spis_pos < 4) {
+      SPDR  = spis_buf[ spis_pos ];
       spis_pos++;
    }
    else {
-      SPDR     = 0x40;//;spis_crc;
+      SPDR  = spis_crc;
       /* Clear command. */
       SPIS_CMD_RESET();
    }

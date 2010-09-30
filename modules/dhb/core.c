@@ -5,9 +5,10 @@
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <util/crc16.h>
 #include <util/delay.h>
-#include <stdio.h>
 
+#include <stdio.h>
 #include <stdint.h>
 
 #include "ioconf.h"
@@ -173,6 +174,7 @@ static inline void sched_init (void)
  */
 static inline void sched_run( uint8_t flags )
 {
+   uint8_t i;
    /*
     * Run tasks.
     *
@@ -182,6 +184,34 @@ static inline void sched_run( uint8_t flags )
    if (flags & SCHED_HEARTBEAT) {
       heartbeat_update();
       current_startSample();
+   }
+   if (flags & SCHED_SPIS_PREP_MOTORGET) {
+      /*
+      spis_buf[0] = (uint8_t)(mot0.feedback>>8);
+      spis_buf[1] = (uint8_t)mot0.feedback;
+      spis_buf[2] = (uint8_t)(mot1.feedback>>8);
+      spis_buf[3] = (uint8_t)mot1.feedback;
+       */
+      spis_buf[0] = 0x31;
+      spis_buf[1] = 0x32;
+      spis_buf[2] = 0x33;
+      spis_buf[3] = 0x34;
+      for (i=0; i<4; i++)
+         spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[i] );
+   }
+   if (flags & SCHED_SPIS_PREP_CURRENT) {
+      /*
+      spis_buf[0] = current_buffer[0];
+      spis_buf[1] = current_buffer[1];
+      spis_buf[2] = current_buffer[2];
+      spis_buf[3] = current_buffer[3];
+       */
+      spis_buf[0] = 0x41;
+      spis_buf[1] = 0x42;
+      spis_buf[2] = 0x43;
+      spis_buf[3] = 0x44;
+      for (i=0; i<4; i++)
+         spis_crc    = _crc_ibutton_update( spis_crc, spis_buf[i] );
    }
    if (flags & SCHED_MOTOR) {
       motor_control();
