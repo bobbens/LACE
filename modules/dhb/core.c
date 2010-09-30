@@ -42,7 +42,7 @@ static uint8_t sched_mot_counter = 0; /**< Counter for the motor controller. */
 static uint8_t sched_heartbeat_counter = 0; /**< Counter for the heart beat. */
 #define SCHED_HEARTBEAT_TOP  200 /**< Divider for heartbeat. */
 /* Scheduler state flags. */
-volatile uint8_t sched_flags  = 0; /**< Scheduler flags. */
+uint8_t sched_flags  = 0; /**< Scheduler flags. */
 
 
 /*

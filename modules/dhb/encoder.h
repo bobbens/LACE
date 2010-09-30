@@ -10,7 +10,7 @@
 /**
  * @brief The encoder structure.
  */
-typedef volatile struct encoder_s {
+typedef struct encoder_s {
    uint16_t cur_tick; /**< Current tick (counts up with overflow). */
    uint16_t last_tick; /**< Last tick to register a state change. */
    uint8_t  pin_state; /**< Current pin state. */

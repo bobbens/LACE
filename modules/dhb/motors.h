@@ -12,7 +12,7 @@
 /**
  * @brief Motor control structure.
  */
-typedef volatile struct motor_s {
+typedef struct motor_s {
    /* Last tick. */
    int16_t feedback;
 
