@@ -14,7 +14,7 @@
 /**
  * @brief STDOUT for printf.
  */
-static FILE mystdout = FDEV_SETUP_STREAM( uart_putc, NULL,
+static FILE mystdout = FDEV_SETUP_STREAM( (int(*)(char,FILE*)) uart_putc, NULL,
                                           _FDEV_SETUP_WRITE );
 
 
