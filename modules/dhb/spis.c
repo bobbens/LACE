@@ -122,6 +122,9 @@ static void spis_cmd_start (void)
 }
 
 
+/**
+ * @brief Handles SPI for the version command.
+ */
 static void spis_cmd_version (void)
 {
    SPDR = DHB_VERSION;
@@ -129,6 +132,9 @@ static void spis_cmd_version (void)
 }
 
 
+/**
+ * @brief Handles SPI for the mode set command.
+ */
 static void spis_cmd_modeset (void)
 {
    uint8_t c = SPDR;
@@ -154,6 +160,9 @@ static void spis_cmd_modeset (void)
 }
 
 
+/**
+ * @brief Handles SPI for the motor set command.
+ */
 static void spis_cmd_motorset (void)
 {
    int16_t mota, motb;
@@ -185,6 +194,9 @@ static void spis_cmd_motorset (void)
 }
 
 
+/**
+ * @brief Handles SPI for the motor get command.
+ */
 static void spis_cmd_motorget (void)
 {
    if (spis_pos < 4) {
@@ -199,6 +211,9 @@ static void spis_cmd_motorget (void)
 }
 
 
+/**
+ * @brief Handles SPI for the current command.
+ */
 static void spis_cmd_current (void)
 {
    if (spis_pos < 4) {
