@@ -29,6 +29,17 @@ inline void current_init (void)
    /* Set up main register. */
 	ADCSRA = _BV(ADEN) | /* Enable ADC. */
             _BV(ADIE) | /* Enable interrupts. */
+   /* Prescaler and timing
+    *
+    * MCU is at 20 MHz
+    * Current sampling is done at 333 Hz
+    *
+    * 128 prescaler -> 156.25 kHz
+    *
+    * First sample needs 27 cycles, next need 13 cycles:
+    *    First sample -> 156.25/27 =  5.787 kHz
+    *    Later sample -> 156.25/13 = 12.019 kHz
+    */
             _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); /* 128 prescaler. */
    ADCSRB = 0; /* No autotrigger. */
 }
