@@ -41,15 +41,15 @@ void fsm( event_t *evt )
             int n;
             char *inbuf;
             inbuf = spim_inbuf( &n );
-            printf( "%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+            printf( "%02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
                   inbuf[0], inbuf[1], inbuf[2], inbuf[3],
                   inbuf[4], inbuf[5], inbuf[6], inbuf[7],
-                  inbuf[8], inbuf[9], inbuf[10], inbuf[11]);
+                  inbuf[8] );
             fsm_action = 1 - fsm_action;
             LED0_TOGGLE();
          }
          else if (evt->timer.timer == 2) {
-            dhb_target( 1, 30, 50 );
+            dhb_target( 1, 70, 40 );
             timer_start( 1, 100, NULL );
          }
          break;
