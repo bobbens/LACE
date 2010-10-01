@@ -60,7 +60,7 @@ motor_t mot1; /**< Motor 1. */
 /*
  * Configuration.
  */
-static int motor_curmode   = DHB_MODE_PWM; /**< Current operating mode. */
+static uint8_t motor_curmode   = DHB_MODE_PWM; /**< Current operating mode. */
 
 
 /*
