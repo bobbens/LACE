@@ -53,7 +53,7 @@ static inline void sched_init (void);
 static inline void sched_run( uint8_t flags );
 /* Heartbeat. */
 static inline void heartbeat_init (void);
-static inline void heartbeat_set( uint16_t rate );
+static inline void heartbeat_set( uint8_t rate )
 static inline void heartbeat_update (void);
 
 
@@ -79,7 +79,7 @@ static inline void heartbeat_init (void)
  *
  *    @param rate Rate to set.
  */
-static inline void heartbeat_set( uint16_t rate )
+static inline void heartbeat_set( uint8_t rate )
 {
    heartbeat_target = rate;
 }
