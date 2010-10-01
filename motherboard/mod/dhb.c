@@ -127,15 +127,31 @@ static int dhb_feedback_callback( event_t* evt )
    char *inbuf;
    int len;
    event_t new_evt;
+   uint8_t base_pos, crc, i;
 
-   /* Store value. */
+   /* Macro for simplification. */
    inbuf = spim_inbuf( &len );
-   dhb_var_feedback[(evt->spi.port-1)*2+0] = (inbuf[3]<<8) + inbuf[4];
-   dhb_var_feedback[(evt->spi.port-1)*2+1] = (inbuf[5]<<8) + inbuf[6];
 
-   /* Generate event. */
+   /* Prepare event. */
    new_evt.type         = EVENT_TYPE_CUSTOM;
    new_evt.custom.id    = EVENT_CUST_DHB_FEEDBACK;
+
+   /* Check CRC. */
+   crc = 0;
+   for (i=0; i<len-1; i++)
+      crc = _crc_ibutton_update( crc, inbuf[i] );
+   if (crc != inbuf[len-1]) {
+      new_evt.custom.data  = 0; /* 0 is error. */
+      event_push( &new_evt );
+      return 1;
+   }
+
+   /* Store value. */
+   base_pos = (evt->spi.port-1)<<1;
+   dhb_var_feedback[base_pos+0] = (inbuf[3]<<8) + inbuf[4];
+   dhb_var_feedback[base_pos+1] = (inbuf[5]<<8) + inbuf[6];
+
+   /* Generate event. */
    new_evt.custom.data  = evt->spi.port;
    event_push( &new_evt );
    event_setCallback( EVENT_TYPE_SPI, NULL ); /* Disable callback. */
@@ -161,15 +177,31 @@ static int dhb_current_callback( event_t* evt )
    char *inbuf;
    int len;
    event_t new_evt;
+   uint8_t base_pos, crc, i;
 
-   /* Store value. */
+   /* Macro for simplification. */
    inbuf = spim_inbuf( &len );
-   dhb_var_current[(evt->spi.port-1)*2+0] = (inbuf[3]<<8) + inbuf[4];
-   dhb_var_current[(evt->spi.port-1)*2+1] = (inbuf[5]<<8) + inbuf[6];
 
-   /* Generate event. */
+   /* Prepare event. */
    new_evt.type         = EVENT_TYPE_CUSTOM;
    new_evt.custom.id    = EVENT_CUST_DHB_CURRENT;
+
+   /* Check CRC. */
+   crc = 0;
+   for (i=0; i<len-1; i++)
+      crc = _crc_ibutton_update( crc, inbuf[i] );
+   if (crc != inbuf[len-1]) {
+      new_evt.custom.data  = 0; /* 0 is error. */
+      event_push( &new_evt );
+      return 1;
+   }
+
+   /* Store value. */
+   base_pos = (evt->spi.port-1)<<1;
+   dhb_var_current[base_pos+0] = (inbuf[3]<<8) + inbuf[4];
+   dhb_var_current[base_pos+1] = (inbuf[5]<<8) + inbuf[6];
+
+   /* Generate event. */
    new_evt.custom.data  = evt->spi.port;
    event_push( &new_evt );
    event_setCallback( EVENT_TYPE_SPI, NULL ); /* Disable callback. */
