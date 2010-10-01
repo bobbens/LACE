@@ -76,14 +76,14 @@ LFUSE := 0xD7
 #       | +-------------> CKOUT ----> No clock output
 #       |
 #       +---------------> CKDIV8 ---> Don't divide by 8
-AVRDUDE_READ_FUSE := \
-	-U lfuse:r:-:i \
-	-U hfuse:r:-:i \
-	-U efuse:r:-:i \
+AVRDUDE_READ_FUSE := 		\
+	-U lfuse:r:-:i				\
+	-U hfuse:r:-:i 			\
+	-U efuse:r:-:i 			\
 	-U lock:r:-:i 
-AVRDUDE_WRITE_FUSE := \
-	-U lfuse:w:$(LFUSE):m \
-	-U hfuse:w:$(HFUSE):m \
+AVRDUDE_WRITE_FUSE := 		\
+	-U lfuse:w:$(LFUSE):m 	\
+	-U hfuse:w:$(HFUSE):m 	\
 	-U efuse:w:$(EFUSE):m
 
 
@@ -94,19 +94,21 @@ AVRDUDE_WRITE_FUSE := \
 #
 CC			:= avr-gcc
 OPTLEVEL := 3
-CFLAGS	:= $(DEBUG) \
+CFLAGS	:= $(DEBUG)				\
 			-mmcu=$(MCU)			\
 			-O$(OPTLEVEL)			\
 			-fpack-struct			\
 			-fshort-enums			\
 			-funsigned-bitfields	\
 			-funsigned-char		\
+			-ffunction-sections	\
+			-fdata-sections		\
 			-W							\
 			-Wall						\
-			-Wextra              \
+			-Wextra					\
 			-Wstrict-prototypes	\
-			--combine -fwhole-program \
-			-I.                  \
+			--combine -fwhole-program\
+			-I.						\
 			-I..
 
 
