@@ -7,7 +7,7 @@
 #include <avr/interrupt.h>
 
 
-static uint16_t current_channel = 0;
+static uint8_t current_channel = 0;
 int8_t current_buffer[4];
 
 
@@ -65,7 +65,7 @@ ISR( ADC_vect )
    else {
       current_buffer[0] = ADCH;
       current_buffer[1] = ADCL;
-      current_channel   = 0;
+      current_channel   = 1;
    }
 }
 
