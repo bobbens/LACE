@@ -28,26 +28,9 @@ inline void current_init (void)
 
    /* Set up main register. */
 	ADCSRA = _BV(ADEN) | /* Enable ADC. */
+            _BV(ADIE) | /* Enable interrupts. */
             _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); /* 128 prescaler. */
    ADCSRB = 0; /* No autotrigger. */
-}
-
-
-/**
- * @brief Gets the current data buffer of the current level.
- */
-inline void current_get( uint8_t *out )
-{
-   /*
-   out[0] = current_buffer[0];
-   out[1] = current_buffer[1];
-   out[2] = current_buffer[2];
-   out[3] = current_buffer[3];
-   */
-   out[0] = 0x41;
-   out[1] = 0x42;
-   out[2] = 0x43;
-   out[3] = 0x44;
 }
 
 
