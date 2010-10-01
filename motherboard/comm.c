@@ -11,7 +11,7 @@
 #include "uart.h"
 
 
-static FILE mystdout = FDEV_SETUP_STREAM(uart_putc, NULL, _FDEV_SETUP_WRITE);
+static FILE mystdout = FDEV_SETUP_STREAM( (int(*)(char,FILE*)) uart_putc, NULL, _FDEV_SETUP_WRITE );
 
 
 void comm_init (void)
