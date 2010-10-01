@@ -8,6 +8,7 @@ PROGRAMMER_MCU       := m328p
 AVRDUDE_PROGRAMMERID := usbasp
 #AVRDUDE_PORT         := /dev/parport0
 #DEBUG						:= -DDEBUG
+HW_VERSION				:= 2
 
 
 #########################################
@@ -95,6 +96,7 @@ AVRDUDE_WRITE_FUSE := 		\
 CC			:= avr-gcc
 OPTLEVEL := 3
 CFLAGS	:= $(DEBUG)				\
+			-DHWVER=$(HW_VERSION)\
 			-mmcu=$(MCU)			\
 			-O$(OPTLEVEL)			\
 			-fpack-struct			\

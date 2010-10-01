@@ -35,7 +35,7 @@ extern motor_t mot1; /**< Motor 1. */
 
 inline void motor_init (void);
 inline void motor_control (void);
-inline void motor_mode( int mode );
+inline void motor_mode( uint8_t mode );
 inline void motor_set( int16_t motor_0, int16_t motor_1 );
 
 

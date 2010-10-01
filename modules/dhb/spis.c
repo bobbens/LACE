@@ -111,6 +111,7 @@ static void spis_cmd_start (void)
 
          default:
             SPIS_CMD_RESET();
+            LED0_ON();
             return;
       }
       spis_pos = 0;
@@ -129,6 +130,7 @@ static void spis_cmd_version (void)
 {
    SPDR = DHB_VERSION;
    SPIS_CMD_RESET();
+   LED0_OFF();
 }
 
 
@@ -150,12 +152,14 @@ static void spis_cmd_modeset (void)
       /* Check CRC. */
       if (c != spis_crc) {
          SPIS_CMD_RESET();
+         LED0_ON();
          return;
       }
       /* Set mode. */
       motor_mode( spis_buf[0] );
       /* Clear command. */
       SPIS_CMD_RESET();
+      LED0_OFF();
    }
 }
 
@@ -181,6 +185,7 @@ static void spis_cmd_motorset (void)
       /* Check CRC. */
       if (c != spis_crc) {
          SPIS_CMD_RESET();
+         LED0_ON();
          return;
       }
       /* Prepare arguments. */
@@ -190,6 +195,7 @@ static void spis_cmd_motorset (void)
       motor_set( mota, motb );
       /* Clear command. */
       SPIS_CMD_RESET();
+      LED0_OFF();
    }
 }
 
@@ -207,6 +213,7 @@ static void spis_cmd_motorget (void)
       SPDR  = spis_crc;
       /* Clear command. */
       SPIS_CMD_RESET();
+      LED0_OFF();
    }
 }
 
@@ -224,6 +231,7 @@ static void spis_cmd_current (void)
       SPDR  = spis_crc;
       /* Clear command. */
       SPIS_CMD_RESET();
+      LED0_OFF();
    }
 }
 

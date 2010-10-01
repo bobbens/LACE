@@ -8,6 +8,7 @@
 #include "ioconf.h"
 #include "encoder.h"
 #include "hbridge.h"
+#include "sched.h"
 
 
 #define ABS(x) ((x)>0)?(x):-(x)
@@ -123,6 +124,9 @@ inline void motor_init (void)
    /* Clear targets. */
    _motor_init( &mot0 );
    _motor_init( &mot1 );
+
+   /* Set the mode. */
+   motor_mode( DHB_MODE_PWM );
 
    /* Start out with motors off. */
    motor_set( 0, 0 );
@@ -279,9 +283,27 @@ inline void motor_set( int16_t motor_0, int16_t motor_1 )
 /**
  * @brief Sets the motor mode.
  */
-inline void motor_mode( int mode )
+inline void motor_mode( uint8_t mode )
 {
    motor_curmode = mode;
+   switch (mode) {
+      case DHB_MODE_PWM:
+         LED1_ON();
+         heartbeat_set( 0 );
+         break;
+
+      case DHB_MODE_FBKS:
+         heartbeat_set( 50 );
+         break;
+
+      case DHB_MODE_TRQ:
+         heartbeat_set( 25 );
+         break;
+
+      default:
+         LED0_ON();
+         break;
+   }
 }
 
 

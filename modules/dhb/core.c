@@ -53,7 +53,6 @@ static inline void sched_init (void);
 static inline void sched_run( uint8_t flags );
 /* Heartbeat. */
 static inline void heartbeat_init (void);
-static inline void heartbeat_set( uint8_t rate );
 static inline void heartbeat_update (void);
 
 
@@ -62,37 +61,55 @@ static inline void heartbeat_update (void);
  *    H E A R T B E A T
  *
  */
-static uint8_t heartbeat_counter = 0; /**< Heartbeat counter. */
-static uint8_t heartbeat_target  = 0; /**< Heartbeat target. */
+#if 0
+static uint8_t heartbeat0_counter = 0; /**< Heartbeat counter. */
+static uint8_t heartbeat0_target  = 0; /**< Heartbeat target. */
+#endif
+static uint8_t heartbeat1_counter = 0; /**< Heartbeat counter. */
+static uint8_t heartbeat1_target  = 0; /**< Heartbeat target. */
 /**
  * @brief Initializes the heartbeat.
  */
 static inline void heartbeat_init (void)
 {
-   heartbeat_counter = 0;
    LED0_ON();
-   LED1_OFF();
-   heartbeat_set( 50 );
+   LED1_ON();
+   heartbeat_set( /*0,*/ 100 );
 }
 /**
  * @brief Sets the heartbeat rate, should be in 1/10 seconds.
  *
  *    @param rate Rate to set.
  */
-static inline void heartbeat_set( uint8_t rate )
+inline void heartbeat_set( /*uint8_t rate0,*/ uint8_t rate1 )
 {
-   heartbeat_target = rate;
+   /*
+   heartbeat0_counter   = 0;
+   heartbeat0_target    = rate0;
+   */
+   heartbeat1_counter   = 0;
+   heartbeat1_target    = rate1;
 }
 /**
  * @brief Toggles the heartbeat if needed.
  */
 static inline void heartbeat_update (void)
 {
-   heartbeat_counter++;
-   if (heartbeat_counter >= heartbeat_target) {
-      LED0_TOG();
-      LED1_TOG();
-      heartbeat_counter = 0;
+   /*
+   if (heartbeat0_target > 0) {
+      heartbeat0_counter++;
+      if (heartbeat0_counter >= heartbeat0_target) {
+         LED0_TOG();
+         heartbeat0_counter = 0;
+      }
+   }
+   */
+   if (heartbeat1_target > 0) {
+      heartbeat1_counter++;
+      if (heartbeat1_counter >= heartbeat1_target) {
+         LED1_TOG();
+         heartbeat1_counter = 0;
+      }
    }
 
    /* Reset watchdog. */
@@ -241,10 +258,15 @@ static inline void init (void)
    encoder_init();
 
    /* ADC subsystem. */
+#if (HWVER > 2)
    current_init();
+#endif /* HW_VER < 3 */
 
    /* Power management. */
    PRR = _BV(PRTWI) | /* Disable TWI. */
+#if !(HWVER > 2)
+         _BV(PRADC) | /* Disable ADC */
+#endif /* HW_VER < 3 */
          _BV(PRTIM2) | /* Disable Timer 2. */
          _BV(PRUSART0); /* Disable USART0. */
 
@@ -255,6 +277,9 @@ static inline void init (void)
 
    /* Initialize the scheduler. */
    sched_init();
+
+   /* Mark as initialized. */
+   LED0_OFF();
 
    /* Enable interrupts. */
    sei();
