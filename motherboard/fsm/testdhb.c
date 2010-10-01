@@ -38,6 +38,7 @@ void fsm( event_t *evt )
                dhb_feedback( 1 );
             else
                dhb_current( 1 );
+            /*
             int n;
             char *inbuf;
             inbuf = spim_inbuf( &n );
@@ -45,6 +46,7 @@ void fsm( event_t *evt )
                   inbuf[0], inbuf[1], inbuf[2], inbuf[3],
                   inbuf[4], inbuf[5], inbuf[6], inbuf[7],
                   inbuf[8] );
+            */
             fsm_action = 1 - fsm_action;
             LED0_TOGGLE();
          }
@@ -56,13 +58,21 @@ void fsm( event_t *evt )
 
       case EVENT_TYPE_CUSTOM:
          if (evt->custom.id == EVENT_CUST_DHB_FEEDBACK) {
-            dhb_feedbackValue( 1, &fbka, &fbkb );
-            //printf( "fbk %d %d\n", fbka, fbkb );
+            if (evt->custom.data == 0)
+               printf( "DHB Feedback CRC error\n" );
+            else {
+               dhb_feedbackValue( 1, &fbka, &fbkb );
+               printf( "fbk %d %d\n", fbka, fbkb );
+            }
             timer_start( 1, 100, NULL );
          }
          else if (evt->custom.id == EVENT_CUST_DHB_CURRENT) {
-            dhb_currentValue( 1, &cura, &curb );
-            //printf( "cur %u %u\n", cura, curb );
+            if (evt->custom.data == 0)
+               printf( "DHB Current CRC error\n" );
+            else {
+               dhb_currentValue( 1, &cura, &curb );
+               printf( "cur %u %u\n", cura, curb );
+            }
             timer_start( 1, 100, NULL );
          }
          break;
