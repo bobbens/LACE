@@ -156,9 +156,8 @@ static inline uint8_t _motor_control( motor_t *mot, encoder_t *enc )
    uint8_t pwm;
 
    /* Only matters if we have a target. */
-   if (mot->target == 0) {
+   if (mot->target == 0)
       return 0;
-   }
 
    /* Linearization of the feedback.
     *
@@ -172,18 +171,18 @@ static inline uint8_t _motor_control( motor_t *mot, encoder_t *enc )
     *      X
     */
    feedback       = 5000 / enc->last_tick;
-   mot->feedback  = feedback;
+   mot->feedback  = feedback; /* Save feedback for later. */
 
    /* Calculate the error. */
-   error    = mot->target - feedback;
+   error          = mot->target - feedback;
 
    /* Accumulate error. */
-   mot->e_accum += error;
+   mot->e_accum  += error;
    /* Anti-windup. */
    if (mot->e_accum > mot->windup)
-      mot->e_accum = mot->windup;
+      mot->e_accum   = mot->windup;
    else if (mot->e_accum < -mot->windup)
-      mot->e_accum = -mot->windup;
+      mot->e_accum   = -mot->windup;
 
    /* Run control - PI. */
    output   = (error * (int16_t)mot->kp) >> 4; /* P */
