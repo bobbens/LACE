@@ -6,6 +6,8 @@
 
 /**
  * @brief Initializes the PWM subsystem.
+ *
+ * Sets PWM pins to output.
  */
 void pwm_init (void);
 

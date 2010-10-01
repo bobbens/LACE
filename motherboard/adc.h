@@ -6,6 +6,8 @@
 
 /**
  * @brief Initializes the ADC subsystem.
+ *
+ * Uses ADC.
  */
 void adc_init (void);
 

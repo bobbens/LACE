@@ -41,17 +41,17 @@ static void init (void)
    /*
     * Initialize subsystems.
     */
-   mod_init(); /* Modules. */
-   adc_init(); /* ADC. */
-   pwm_init(); /* PWM. */
-   comm_init(); /* Communication. */
-   event_init(); /* Events. */
+   mod_init();    /* Modules. */
+   adc_init();    /* ADC. */
+   pwm_init();    /* PWM IO. */
+   comm_init();   /* Communication with UART0. */
+   event_init();  /* Events. */
 
    /*
     * Optional subsystems.
     */
-   /*servo_init();*/ /* Servo motors on TIMER1. */
    timer_init(); /* Timer infrastructure on TIMER0. */
+   /*servo_init();*/ /* Servo motors on TIMER1. */
 
    /* Set sleep mode. */
    set_sleep_mode( SLEEP_MODE_IDLE );

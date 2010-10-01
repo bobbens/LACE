@@ -6,6 +6,10 @@
 
 #include "ioconf.h"
 
+/*
+ * Uses TWI.
+ */
+
 
 /* Set frequency.
  *

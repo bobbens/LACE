@@ -38,7 +38,11 @@
  */
 uint16_t sharp_get (void)
 {
+   uint16_t adc_val;
 
+   adc_val = (ADCH<<8) + ADCL;
+
+   return 0 + (27*1024) / adc_val;
 }
 
 
