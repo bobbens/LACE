@@ -2,7 +2,6 @@
 #
 #       CHIP DETAILS + AVRDUDE
 #
-AVRDUDE              := avrdude
 MCU                  := atmega328p
 PROGRAMMER_MCU       := m328p
 AVRDUDE_PROGRAMMERID := usbasp
@@ -119,6 +118,7 @@ CFLAGS	:= $(DEBUG)				\
 #
 #       MISC VARIABLES
 #
+AVRDUDE	:= avrdude
 AVRSIZE	:= avr-size
 OBJCOPY  := avr-objcopy
 OBJDUMP  := avr-objdump
@@ -126,7 +126,6 @@ HEXFORMAT := ihex
 COPYOPTS :=		-j .text			\
 		         -j .data			\
 		         -O $(HEXFORMAT)
-SIZE     := avr-size
 AVRSIM   := simulavr
 GDB      := avr-gdb
 PORT     := 1212
