@@ -119,6 +119,7 @@ CFLAGS	:= $(DEBUG)				\
 #
 #       MISC VARIABLES
 #
+AVRSIZE	:= avr-size
 OBJCOPY  := avr-objcopy
 OBJDUMP  := avr-objdump
 HEXFORMAT := ihex
@@ -160,6 +161,7 @@ elf: $(PRG).elf
 
 $(PRG).elf: $(SRC)
 	$(CC) $(CFLAGS) -o $(PRG).elf $(SRC) $(GCCLIB)
+	@$(AVRSIZE) --mcu=$(MCU) --format=avr $(PRG).elf
 
 $(PRG).hex:	$(PRG).elf
 	$(OBJCOPY) $(COPYOPTS) $< $@
