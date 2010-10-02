@@ -5,7 +5,7 @@
 MCU				:= atmega644p
 PROGRAMMER_MCU := m644p
 AVRDUDE_PROGRAMMERID := usbasp
-AVRDUDE_PORT	:= /dev/parport0
+#AVRDUDE_PORT	:= /dev/parport0
 
 
 #########################################
@@ -20,12 +20,14 @@ CFLAGS			:= -mmcu=$(MCU)			\
 						-fshort-enums			\
 						-funsigned-bitfields	\
 						-funsigned-char		\
+						-ffunction-sections	\
+						-fdata-sections		\
 						-W							\
 						-Wall						\
-						-Wextra				  \
+						-Wextra					\
 						-Wstrict-prototypes	\
 						-I.						\
-						-I..					  \
+						-I..						\
 						-I../modules
 
 
@@ -118,10 +120,11 @@ REMOVE			:= $(RM)
 #		 MISC VARIABLES
 #
 AVRDUDE			:= avrdude
-OBJCOPY		  := avr-objcopy
-OBJDUMP		  := avr-objdump
+AVRSIZE			:= avr-size
+OBJCOPY			:= avr-objcopy
+OBJDUMP			:= avr-objdump
 HEXFORMAT		:= ihex
-COPYOPTS		 :=		-j .text			\
+COPYOPTS			:=		-j .text			\
 							-j .data			\
 							-O $(HEXFORMAT)
 SIZE			  := avr-size
@@ -160,6 +163,7 @@ elf: $(PRG).elf
 
 $(PRG).elf:	$(OBJS)
 	$(CC) $(CFLAGS) -o $(PRG).elf $(OBJS) $(GCCLIB)
+	@$(AVRSIZE) --mcu=$(MCU) --format=avr $(PRG).elf
 
 $(PRG).hex:	$(PRG).elf
 	$(OBJCOPY) $(COPYOPTS) $< $@
